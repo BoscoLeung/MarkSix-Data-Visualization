@@ -115,7 +115,7 @@ for (let i = 1; i <= 49; i++) {
             text.style.display = 'flex';
         } else {
             if (selectedNumbers.size >= maxSelections) {
-                alert("up to 6 numbers can be selected !");
+                alert("You can only choose a maximum of 6 numbers!");
                 return;
             }
             selectedNumbers.add(num);
