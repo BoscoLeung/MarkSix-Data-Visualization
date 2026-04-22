@@ -400,3 +400,23 @@ async function renderCompanionChart(selectedList) {
         .style("fill", "#4a5568")
         .text("Co-occurrence Count");
 }
+
+// Pop-up control
+const modalOverlay = document.getElementById("modalOverlay");
+const infoBtn = document.getElementById("infoBtn");
+const closeModal = document.getElementById("closeModal");
+
+infoBtn.addEventListener("click", () => {
+    modalOverlay.style.display = "flex";
+});
+
+closeModal.addEventListener("click", () => {
+    modalOverlay.style.display = "none";
+});
+
+// Can also turn it off by clicking the background.
+modalOverlay.addEventListener("click", (e) => {
+    if (e.target === modalOverlay) {
+        modalOverlay.style.display = "none";
+    }
+});
