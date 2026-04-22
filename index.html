@@ -29,41 +29,49 @@
 
             <!-- Statistical Information Area -->
             <div class="split right">
-                <div class="stats-container" id="statsContainer" style="display: none;">
+                <div class="stats-container" id="statsContainer" style="display: none; width: 100%;">
                     <div class="stats-header">
                         <div class="stats-icons" id="statsIcons">
-                            <div class="stats-icon" id="statsIcon">1</div>
                         </div>
                         <div class="stats-title">
                             <h2>Numbers: <span id="selectedNumbersText">1</span></h2>
                             <p>Statistical Analysis</p>
                         </div>
                     </div>
+            
+                    <!-- Statistical Card Area -->
                     <div class="stats-cards">
                         <div class="stat-card appearances">
                             <div class="icon">↗</div>
                             <div class="label">Appearances</div>
-                            <div class="value" id="appearances">15</div>
+                            <div class="value" id="appearances">0</div>
                             <div style="color: #718096; font-size: 18px;">in 2522 draws</div>
                         </div>
                         <div class="stat-card frequency">
                             <div class="icon">%</div>
                             <div class="label">Frequency</div>
-                            <div class="value" id="frequency">15.0%</div>
+                            <div class="value" id="frequency">0.00%</div>
                             <div style="color: #718096; font-size: 18px;">appearance rate</div>
                         </div>
                         <div class="stat-card main">
                             <div class="icon">🏆</div>
                             <div class="label">Main Number</div>
-                            <div class="value" id="mainNumber">10</div>
+                            <div class="value" id="mainNumber">0</div>
                             <div style="color: #718096; font-size: 18px;">times drawn</div>
                         </div>
                         <div class="stat-card last">
                             <div class="icon">🗓️</div>
                             <div class="label">Last Seen</div>
-                            <div class="value" id="lastSeen">2025-06-04</div>
+                            <div class="value" id="lastSeen">N/A</div>
                             <div style="color: #718096; font-size: 18px;">last appearance</div>
                         </div>
+                    </div>
+                    
+                    <!-- Bar chart Area -->
+                    <div id="chartWrapper" style="display: none; margin-top: 20px; width: 100%;">
+                        <h3 style="font-size: 18px; margin-bottom: 5px;">Most Common Companion Numbers</h3>
+                        <p style="color: #718096; margin-bottom: 15px;">Numbers that frequently appear together with the selected number</p>
+                        <div id="companionChart" style="width: 100%;"></div>
                     </div>
                 </div>
             </div>
