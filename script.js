@@ -154,6 +154,39 @@ function updateNumberVisualization() {
     });
 }
 
+// Dynamically updated legend
+function updateLegend() {
+    const legend = document.getElementById("dynamicLegend");
+    legend.innerHTML = "";
+
+    const range = colorScale.range();
+    // Calculate the segmented threshold of scaleQuantize
+    const thresholds = colorScale.thresholds();
+
+    // Generate tags for each segment
+    range.forEach((color, i) => {
+        let start, end;
+        if (i === 0) {
+            start = colorScale.domain()[0];
+            end = thresholds[0];
+        } else if (i === range.length - 1) {
+            start = thresholds[thresholds.length - 1];
+            end = colorScale.domain()[1];
+        } else {
+            start = thresholds[i - 1];
+            end = thresholds[i];
+        }
+
+        const item = document.createElement("div");
+        item.className = "legend-item";
+        item.innerHTML = `
+            <span class="legend-color" style="background-color: ${color}; ${color === '#ffffff' ? 'border:1px solid #ddd;' : ''}"></span>
+            <span class="legend-text">${start}-${end} ${i === 0 ? '(Low)' : i === range.length-1 ? '(High)' : ''}</span>
+        `;
+        legend.appendChild(item);
+    });
+}
+
 // Number of times the combination appears
 function countComboAppearance(combo) {
     let count = 0;
@@ -205,10 +238,13 @@ function updateAllStats() {
 
     if (selectedNumbers.size === 1) {
         updateStatsCard(sorted[0]);
-        renderCompanionChart(sorted[0]);
     } else {
         getCombinationStats(sorted);
     }
+
+    renderCompanionChart(sorted);
+
+    updateLegend();
 }
 
 // Single number statistics
@@ -261,67 +297,106 @@ function getCombinationStats(sortedNumbers) {
 
 
 // Co-occurrence bar chart
-function renderCompanionChart(selectedNum) {
+async function renderCompanionChart(selectedList) {
     const chartWrapper = document.getElementById("chartWrapper");
     const chartContainer = document.getElementById("companionChart");
 
-    // The chart is displayed only when one number is selected.
-    if (selectedNumbers.size !== 1) {
-        chartWrapper.style.display = "none";
-        return;
-    }
-    
     chartWrapper.style.display = "block";
-    chartContainer.innerHTML = ""; // Clear old chart
+    chartContainer.innerHTML = "";
 
-    // Data processing
-    const data = [];
-    for (let i = 1; i <= 49; i++) {
-        if (i === selectedNum) continue;
-        data.push({ number: i, count: Data.cooccurrence[selectedNum][i] });
+    // Load data
+    const draws = await d3.csv("Mark_Six.csv");
+
+    const result = [];
+
+    // For each unselected number n
+    for (let n = 1; n <= 49; n++) {
+        if (selectedList.includes(n)) continue;
+
+        // Combination = All numbers you selected + n
+        const combo = [...selectedList, n].sort((a, b) => a - b);
+
+        // Calculate how many times this set of numbers actually appeared together
+        let count = 0;
+        for (const draw of draws) {
+            const nums = [
+                +draw['Winning Number 1'],
+                +draw['2'],
+                +draw['3'],
+                +draw['4'],
+                +draw['5'],
+                +draw['6']
+            ];
+
+            // Check that every single one in the combo is in the winning numbers.
+            const allIn = combo.every(x => nums.includes(x));
+            if (allIn) count++;
+        }
+
+        result.push({ number: n, count: count });
     }
-    
-    // Take the top 10
-    const top10 = data.sort((a, b) => b.count - a.count).slice(0, 10);
 
-    // Drawing size
-    const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+    // Take the top 10 with the most occurrences
+    const top10 = result
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+
+    // Drawing chart
+    const margin = { top: 15, right: 20, bottom: 45, left: 40 };
     const width = chartContainer.clientWidth - margin.left - margin.right;
     const height = 250 - margin.top - margin.bottom;
 
     const svg = d3.select(chartContainer)
         .append("svg")
-        .attr("width", width + margin.left + margin.right)
+        .attr("width", width)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    // X-axis
     const x = d3.scaleBand()
         .domain(top10.map(d => d.number))
-        .range([0, width])
+        .range([0, width - margin.left - margin.right])
         .padding(0.2);
-    
+
     svg.append("g")
         .attr("transform", `translate(0, ${height})`)
         .call(d3.axisBottom(x));
 
-    // Y-axis
+    const maxY = d3.max(top10, d => d.count) || 1;
+
     const y = d3.scaleLinear()
-        .domain([0, d3.max(top10, d => d.count)])
+        .domain([0, maxY])
         .range([height, 0]);
-    
+
     svg.append("g")
         .call(d3.axisLeft(y));
 
-    // Bar chart
     svg.selectAll("rect")
         .data(top10)
         .enter()
         .append("rect")
-        .attr("class", "bar")
+        .attr("fill", "#9333ea")
         .attr("x", d => x(d.number))
         .attr("y", d => y(d.count))
         .attr("width", x.bandwidth())
         .attr("height", d => height - y(d.count));
+
+    // X-axis label
+    svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", height + 40)
+        .style("text-anchor", "middle")
+        .style("font-size", "14px")
+        .style("fill", "#4a5568")
+        .text("Companion Number");
+
+    // Y-axis label
+    svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -margin.left + 15)
+        .attr("x", -height / 2)
+        .style("text-anchor", "middle")
+        .style("font-size", "14px")
+        .style("fill", "#4a5568")
+        .text("Co-occurrence Count");
 }
