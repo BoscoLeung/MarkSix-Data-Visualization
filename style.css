@@ -203,3 +203,71 @@ body, html {
 .stat-card.frequency .value { color: #16a34a; }
 .stat-card.main .value { color: #ea580c; }
 .stat-card.last .value { color: #9333ea; }
+
+/* Co-occurrence bar chart container style */
+.chart-container {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.chart-header h3 {
+    margin: 0 0 5px;
+    font-size: 24px;
+    color: #1a202c;
+}
+
+.chart-header p {
+    margin: 0 0 20px;
+    color: #718096;
+    font-size: 16px;
+}
+
+/* Basic style of D3 chart */
+.bar {
+    fill: url(#gradient);
+}
+.bar:hover {
+    opacity: 0.8;
+}
+.axis-label {
+    font-size: 14px;
+    fill: #4a5568;
+}
+.tooltip {
+    position: absolute;
+    background: white;
+    border: 1px solid #9333ea;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.right {
+    overflow-y: auto !important;
+    align-items: flex-start !important;
+    padding: 20px !important;
+}
+
+.chart-section {
+    width: 100%;
+}
+
+#companionChart svg {
+    max-width: 100%;
+}
+
+.bar {
+    fill: #9333ea;
+}
+.bar:hover {
+    fill: #ec4899;
+}
+
+.axis text {
+    font-size: 12px;
+}
