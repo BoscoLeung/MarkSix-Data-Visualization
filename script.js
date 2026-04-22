@@ -24,7 +24,7 @@ d3.csv("Mark_Six.csv").then(data => {
             +draw['5'],
             +draw['6']
         ];
-        let extraNum = +draw['Extra'] || 0;
+        let extraNum = +draw['Extra Number'] || 0;
         let currentDate = draw.Date;
 
         // Main number statistics
@@ -160,8 +160,12 @@ function countComboAppearance(combo) {
     d3.csv("Mark_Six.csv").then(draws => {
         draws.forEach(draw => {
             const nums = [
-                +draw['Winning Number 1'], +draw['2'], +draw['3'],
-                +draw['4'], +draw['5'], +draw['6']
+                +draw['Winning Number 1'], 
+                +draw['2'], 
+                +draw['3'],
+                +draw['4'], 
+                +draw['5'], 
+                +draw['6']
             ];
             const containsAll = combo.every(n => nums.includes(n));
             if (containsAll) count++;
@@ -201,6 +205,7 @@ function updateAllStats() {
 
     if (selectedNumbers.size === 1) {
         updateStatsCard(sorted[0]);
+        renderCompanionChart(sorted[0]);
     } else {
         getCombinationStats(sorted);
     }
@@ -224,10 +229,14 @@ function getCombinationStats(sortedNumbers) {
 
         draws.forEach(draw => {
             const main = [
-                +draw['Winning Number 1'], +draw['2'], +draw['3'],
-                +draw['4'], +draw['5'], +draw['6']
+                +draw['Winning Number 1'], 
+                +draw['2'], 
+                +draw['3'],
+                +draw['4'], 
+                +draw['5'], 
+                +draw['6']
             ];
-            const extra = +draw['Extra'] || 0;
+            const extra = +draw['Extra Number'] || 0;
             const all = [...main, extra];
             const date = draw.Date;
 
@@ -248,4 +257,71 @@ function getCombinationStats(sortedNumbers) {
         d3.select("#mainNumber").text(mainComboCount);
         d3.select("#lastSeen").text(lastDrawDate);
     });
+}
+
+
+// Co-occurrence bar chart
+function renderCompanionChart(selectedNum) {
+    const chartWrapper = document.getElementById("chartWrapper");
+    const chartContainer = document.getElementById("companionChart");
+
+    // The chart is displayed only when one number is selected.
+    if (selectedNumbers.size !== 1) {
+        chartWrapper.style.display = "none";
+        return;
+    }
+    
+    chartWrapper.style.display = "block";
+    chartContainer.innerHTML = ""; // Clear old chart
+
+    // Data processing
+    const data = [];
+    for (let i = 1; i <= 49; i++) {
+        if (i === selectedNum) continue;
+        data.push({ number: i, count: Data.cooccurrence[selectedNum][i] });
+    }
+    
+    // Take the top 10
+    const top10 = data.sort((a, b) => b.count - a.count).slice(0, 10);
+
+    // Drawing size
+    const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+    const width = chartContainer.clientWidth - margin.left - margin.right;
+    const height = 250 - margin.top - margin.bottom;
+
+    const svg = d3.select(chartContainer)
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+    // X-axis
+    const x = d3.scaleBand()
+        .domain(top10.map(d => d.number))
+        .range([0, width])
+        .padding(0.2);
+    
+    svg.append("g")
+        .attr("transform", `translate(0, ${height})`)
+        .call(d3.axisBottom(x));
+
+    // Y-axis
+    const y = d3.scaleLinear()
+        .domain([0, d3.max(top10, d => d.count)])
+        .range([height, 0]);
+    
+    svg.append("g")
+        .call(d3.axisLeft(y));
+
+    // Bar chart
+    svg.selectAll("rect")
+        .data(top10)
+        .enter()
+        .append("rect")
+        .attr("class", "bar")
+        .attr("x", d => x(d.number))
+        .attr("y", d => y(d.count))
+        .attr("width", x.bandwidth())
+        .attr("height", d => height - y(d.count));
 }
