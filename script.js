@@ -224,7 +224,6 @@ function updateAllStats() {
     emptyState.style.display = "none";
     rightPanel.classList.add("active");
 
-
     const sorted = Array.from(selectedNumbers).sort((a, b) => a - b);
     d3.select("#statsIcons").html("");
 
