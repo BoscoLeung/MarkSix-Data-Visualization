@@ -130,11 +130,26 @@ body, html {
     box-sizing: border-box;
     border-radius: 15px;
     margin: 10px;
-    background-color: #ffe6e6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background-color: transparent;
     padding: 20px;
+    position: relative;
+}
+.right.active {
+    background-color: #ffe6e6; 
+}
+
+.empty-state-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    text-align: center;
+    color: #718096;
+    font-size: 36px;
+    line-height: 1.6;
+    word-wrap: break-word;
+    margin: 0;
 }
 
 .grid-container {
