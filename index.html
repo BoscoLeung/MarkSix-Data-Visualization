@@ -7,10 +7,21 @@
 </head>
 <body>
     <div class="wrapper">
+
         <div class="header">
-            <div class="h1">Pick a Number</div>
-            <div class="p1">Select any number from 1-49 to see its winning probability and statistics</div>
+            <div class="header-left">
+                <img src="images/ball-1.svg" alt="logo" class="logo-icon">
+                <h1>Mark Six <span class="subtitle">Visualization</span></h1>
+            </div>
+            <button id="infoBtn" class="info-button">What is Mark Six?</button>
         </div>
+        
+        <div class="mode-bar">
+            <span class="mode-label">Mode:</span>
+            <button class="mode-btn active">Number Selection</button>
+            <button class="mode-btn">Explore More</button>
+        </div>
+
         <div class="main-content">
             
             <!-- Number Selection Area-->
@@ -61,7 +72,6 @@
                 </div>
 
                 <!-- Statistics panel -->
-                
                 <div class="stats-container" id="statsContainer" style="display: none; width: 100%;">
                     <div class="stats-header">
                         <div class="stats-icons" id="statsIcons">
