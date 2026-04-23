@@ -210,11 +210,20 @@ function countComboAppearance(combo) {
 // Statistical Area Update 
 function updateAllStats() {
     const container = document.getElementById("statsContainer");
+    const emptyState = document.getElementById("emptyState");
+    const rightPanel = document.querySelector(".right");
+    
     if (selectedNumbers.size === 0) {
         container.style.display = "none";
+        emptyState.style.display = "block";
+        rightPanel.classList.remove("active");
         return;
     }
+    
     container.style.display = "block";
+    emptyState.style.display = "none";
+    rightPanel.classList.add("active");
+
 
     const sorted = Array.from(selectedNumbers).sort((a, b) => a - b);
     d3.select("#statsIcons").html("");
