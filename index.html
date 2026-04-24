@@ -7,115 +7,125 @@
 </head>
 <body>
     <div class="wrapper">
-
-        <div class="header">
-            <div class="header-left">
+        <!-- Left navigation bar -->
+        <div class="sidebar-left">
+            <div class="sidebar-header">
                 <img src="images/ball-1.svg" alt="logo" class="logo-icon">
-                <h1>Mark Six <span class="subtitle">Visualization</span></h1>
+                <h1>Mark Six</h1>
+                <p>Visualization</p>
+                <button id="infoBtn" class="info-button">What is Mark Six?</button>
             </div>
-            <button id="infoBtn" class="info-button">What is Mark Six?</button>
-        </div>
-        
-        <div class="mode-bar">
-            <span class="mode-label">Mode:</span>
-            <button class="mode-btn active">Number Selection</button>
-            <button class="mode-btn">Explore More</button>
+
+            <div class="nav-menu">
+                <button class="nav-btn active">Pick Numbers</button>
+                <button class="nav-btn">Frequency</button>
+                <button class="nav-btn">Hot & Cold</button>
+                <button class="nav-btn">Co-occurrence</button>
+                <button class="nav-btn">Randomness</button>
+                <button class="nav-btn">Colour Chart</button>
+                <button class="nav-btn">Distribution</button>
+                <button class="nav-btn">Prize Money</button>
+                <button class="nav-btn">Last 10 Draws</button>
+                <button class="nav-btn">Future Trend</button>
+            </div>
+
+            <button class="download-btn">Download Dataset</button>
         </div>
 
-        <div class="main-content">
+        <!-- Number Selection Area-->
+        <div class="main-middle">
+            <div class="text-container-top">
+                <p style="color: #b30000; font-size: 18px;">&#9679; &#9679; &#9679; &#9679; &#9679; &#9679; &#9679</p>
+                <p style="color: #b30000; font-size: 40px; font-weight: bold">六合彩</p>
+                <p style="color: #b30000; font-size: 20px;">MARK SIX</p>
+            </div>
             
-            <!-- Number Selection Area-->
-            <div class="split left">
-                <div class="text-container-top">
-                    <p style="color: #b30000; font-size: 18px;">&#9679; &#9679; &#9679; &#9679; &#9679; &#9679; &#9679</p>
-                    <p style="color: #b30000; font-size: 40px; font-weight: bold">六合彩</p>
-                    <p style="color: #b30000; font-size: 20px;">MARK SIX</p>
+            <div class="grid-container" id="number-grid"></div>
+
+            <div class="legend-container">
+                <div class="legend-item">
+                    <span class="legend-color" style="background:#ffffff; border:1px solid #ccc;"></span>
+                    <span>0% - 20%</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background:#ffcccc;"></span>
+                    <span>21% - 40%</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background:#ff9999;"></span>
+                    <span>41% - 60%</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background:#ff6666;"></span>
+                    <span>61% - 80%</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background:#ff0000;"></span>
+                    <span>81% - 100%</span>
+                </div>
+            </div>
+
+            <div class="text-container-bottom">
+                <p style="color: #b30000; font-size: 16px;">六合彩慈善有餘</p>
+                <p style="color: #b30000; font-size: 16px; font-family: 'segoe script'; margin-left: 2em">Mark Six, there are more in charity</p>
+            </div>
+
+            <button id="resetBtn" class="reset-button">
+                <span class="reset-icon">↺ Reset</span>
+            </button>
+        </div>
+
+        <!-- Statistical Information Area -->
+        <div class="sidebar-right">
+            <!-- Initial tooltip text -->
+            <div class="empty-state-text" id="emptyState">
+                Pick any number from the left to see its winning probability and statistics
+            </div>
+
+            <!-- Statistics panel -->
+            <div class="stats-container" id="statsContainer" style="display: none; width: 100%;">
+                <div class="stats-header">
+                    <div class="stats-icons" id="statsIcons">
+                    </div>
+                    <div class="stats-title">
+                        <h2>Number(s): <span id="selectedNumbersText">1</span></h2>
+                        <p>Statistical Analysis</p>
+                    </div>
+                </div>
+        
+                <!-- Statistical Card Area -->
+                <div class="stats-cards">
+                    <div class="stat-card appearances">
+                        <div class="icon">↗</div>
+                        <div class="label">Appearances</div>
+                        <div class="value" id="appearances">0</div>
+                        <div style="color: #718096; font-size: 18px;">in 2522 draws</div>
+                    </div>
+                    <div class="stat-card frequency">
+                        <div class="icon">%</div>
+                        <div class="label">Frequency</div>
+                        <div class="value" id="frequency">0.00%</div>
+                        <div style="color: #718096; font-size: 18px;">appearance rate</div>
+                    </div>
+                    <div class="stat-card main">
+                        <div class="icon">🏆</div>
+                        <div class="label">Main Number</div>
+                        <div class="value" id="mainNumber">0</div>
+                        <div style="color: #718096; font-size: 18px;">times drawn</div>
+                    </div>
+                    <div class="stat-card last">
+                        <div class="icon">🗓️</div>
+                        <div class="label">Last Seen</div>
+                        <div class="value" id="lastSeen">N/A</div>
+                        <div style="color: #718096; font-size: 18px;">last appearance</div>
+                    </div>
                 </div>
                 
-                <div class="grid-container" id="number-grid"></div>
-
-                <div class="legend-container">
-                    <div class="legend-item">
-                        <span class="legend-color" style="background:#ffffff; border:1px solid #ccc;"></span>
-                        <span>0% - 20%</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color" style="background:#ffcccc;"></span>
-                        <span>21% - 40%</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color" style="background:#ff9999;"></span>
-                        <span>41% - 60%</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color" style="background:#ff6666;"></span>
-                        <span>61% - 80%</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color" style="background:#ff0000;"></span>
-                        <span>81% - 100%</span>
-                    </div>
-                </div>
-
-                <div class="text-container-bottom">
-                    <p style="color: #b30000; font-size: 16px;">六合彩慈善有餘</p>
-                    <p style="color: #b30000; font-size: 16px; font-family: 'segoe script'; margin-left: 2em">Mark Six, there are more in charity</p>
-                </div>
-            </div>
-
-            <!-- Statistical Information Area -->
-            <div class="split right">
-
-                <!-- Initial tooltip text -->
-                <div class="empty-state-text" id="emptyState">
-                    Pick any number from the left to see its winning probability and statistics
-                </div>
-
-                <!-- Statistics panel -->
-                <div class="stats-container" id="statsContainer" style="display: none; width: 100%;">
-                    <div class="stats-header">
-                        <div class="stats-icons" id="statsIcons">
-                        </div>
-                        <div class="stats-title">
-                            <h2>Numbers: <span id="selectedNumbersText">1</span></h2>
-                            <p>Statistical Analysis</p>
-                        </div>
-                    </div>
-            
-                    <!-- Statistical Card Area -->
-                    <div class="stats-cards">
-                        <div class="stat-card appearances">
-                            <div class="icon">↗</div>
-                            <div class="label">Appearances</div>
-                            <div class="value" id="appearances">0</div>
-                            <div style="color: #718096; font-size: 18px;">in 2522 draws</div>
-                        </div>
-                        <div class="stat-card frequency">
-                            <div class="icon">%</div>
-                            <div class="label">Frequency</div>
-                            <div class="value" id="frequency">0.00%</div>
-                            <div style="color: #718096; font-size: 18px;">appearance rate</div>
-                        </div>
-                        <div class="stat-card main">
-                            <div class="icon">🏆</div>
-                            <div class="label">Main Number</div>
-                            <div class="value" id="mainNumber">0</div>
-                            <div style="color: #718096; font-size: 18px;">times drawn</div>
-                        </div>
-                        <div class="stat-card last">
-                            <div class="icon">🗓️</div>
-                            <div class="label">Last Seen</div>
-                            <div class="value" id="lastSeen">N/A</div>
-                            <div style="color: #718096; font-size: 18px;">last appearance</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Bar chart Area -->
-                    <div id="chartWrapper" style="display: none; margin-top: 20px; width: 100%;">
-                        <h3 style="font-size: 30px; margin-bottom: 5px;">Most Common Companion Numbers</h3>
-                        <p style="color: #718096; font-size: 14px; margin-bottom: 10px;">Numbers that frequently appear together with your selection</p>
-                        <div id="companionChart" style="width: 100%;"></div>
-                    </div>
+                <!-- Bar chart Area -->
+                <div id="chartWrapper" style="display: none; margin-top: 20px; width: 100%;">
+                    <h3 style="font-size: 30px; margin-bottom: 5px;">Most Common Companion Numbers</h3>
+                    <p style="color: #718096; font-size: 14px; margin-bottom: 10px;">Numbers that frequently appear together with your selection</p>
+                    <div id="companionChart" style="width: 100%;"></div>
                 </div>
             </div>
         </div>
