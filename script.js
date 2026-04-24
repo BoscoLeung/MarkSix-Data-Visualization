@@ -211,7 +211,7 @@ function countComboAppearance(combo) {
 function updateAllStats() {
     const container = document.getElementById("statsContainer");
     const emptyState = document.getElementById("emptyState");
-    const rightPanel = document.querySelector(".right");
+    const rightPanel = document.querySelector(".sidebar-right");
     
     if (selectedNumbers.size === 0) {
         container.style.display = "none";
@@ -463,3 +463,32 @@ modalOverlay.addEventListener("click", (e) => {
         modalOverlay.style.display = "none";
     }
 });
+
+const resetBtn = document.getElementById("resetBtn");
+resetBtn.addEventListener("click", () => {
+    // Clear selected numbers
+    selectedNumbers.clear();
+
+    // Restore all balls to an unselected state.
+    document.querySelectorAll(".num-ball").forEach(ball => {
+        ball.classList.remove("selected");
+        ball.querySelector(".num-text").style.display = "flex";
+        ball.style.backgroundColor = ""; // Clear heatmap colors
+    });
+
+    updateNumberVisualization();
+    updateAllStats();
+});
+
+// Download CSV file
+document.getElementById('downloadBtn').addEventListener('click', () => {
+    // File path
+    const fileUrl = 'Mark_Six.csv';
+    const fileName = 'Mark_Six.csv';
+  
+    // Create a temporary <a> tag to automatically click and download.
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.download = fileName;
+    link.click();
+  });
