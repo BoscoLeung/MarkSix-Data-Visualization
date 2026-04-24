@@ -355,11 +355,26 @@ async function renderCompanionChart(selectedList) {
     const height = 250 - margin.top - margin.bottom;
 
     const svg = d3.select(chartContainer)
+        .append("div")
+        .style("position", "relative")
         .append("svg")
-        .attr("width", width)
+        .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+    const tooltip = d3.select("body").append("div")
+        .attr("class", "chart-tooltip")
+        .style("position", "fixed")
+        .style("background", "#ffffff")
+        .style("border", "1px solid #9333ea")
+        .style("border-radius", "8px")
+        .style("padding", "10px 14px")
+        .style("box-shadow", "0 3px 10px rgba(0,0,0,0.2)")
+        .style("pointer-events", "none")
+        .style("z-index", "9999")
+        .style("opacity", 0)
+        .style("font-size", "14px");
 
     const x = d3.scaleBand()
         .domain(top10.map(d => d.number))
@@ -387,7 +402,27 @@ async function renderCompanionChart(selectedList) {
         .attr("x", d => x(d.number))
         .attr("y", d => y(d.count))
         .attr("width", x.bandwidth())
-        .attr("height", d => height - y(d.count));
+        .attr("height", d => height - y(d.count))
+
+        // Mouse hover
+        .on("mouseover", function(e, d) {
+            d3.select(this).attr("fill", "#c084fc");
+            
+            tooltip
+                .style("opacity", 1)
+                .html(`
+                    <strong>Number ${d.number}</strong><br/>
+                    Co-occurrence: ${d.count} times
+                `)
+                .style("left", (e.clientX + 15) + "px")
+                .style("top", (e.clientY - 28) + "px");
+        })
+        
+        // Mouse leave
+        .on("mouseout", function() {
+            d3.select(this).attr("fill", "#9333ea");
+            tooltip.style("opacity", 0);
+        });
 
     // X-axis label
     svg.append("text")
