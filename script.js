@@ -149,12 +149,12 @@ for (let i = 1; i <= 49; i++) {
     grid.appendChild(ball);
 }
 
-// 新版本：用球外環完整度表示機率
+// Probability is represented by the completeness of the outer ring of the sphere.
 async function updateNumberVisualization() {
     const selectedArr = Array.from(selectedNumbers);
-    const circumference = 295; // 圓圈總長度
+    const circumference = 295; // Total length of the circle
 
-    // 沒選號 → 全部恢復完整圈圈
+    // No number selected then restore all circles
     if (selectedArr.length === 0) {
         document.querySelectorAll('.num-ball').forEach(ball => {
             const circle = ball.querySelector('circle');
@@ -167,7 +167,7 @@ async function updateNumberVisualization() {
     let scoreMap = {};
     let allScores = [];
 
-    // 計算每個號碼的分數
+    // Calculate the score for each number.
     for (let ball of document.querySelectorAll('.num-ball')) {
         const num = parseInt(ball.querySelector('.num-text').innerText);
         if (selectedNumbers.has(num)) continue;
@@ -187,7 +187,7 @@ async function updateNumberVisualization() {
 
     const maxScore = Math.max(...allScores, 1);
 
-    // 開始更新圈圈長度
+    // Updating circle length
     document.querySelectorAll('.num-ball').forEach(ball => {
         const num = parseInt(ball.querySelector('.num-text').innerText);
         const circle = ball.querySelector('circle');
