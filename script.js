@@ -96,6 +96,20 @@ for (let i = 1; i <= 49; i++) {
     ball.appendChild(img);
     ball.appendChild(text);
 
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.classList.add("ball-ring");
+    svg.setAttribute("viewBox", "0 0 100 100");
+
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.setAttribute("cx", "50");
+    circle.setAttribute("cy", "50");
+    circle.setAttribute("r", "47");
+    circle.setAttribute("stroke", getMarkSixColor(i));
+    circle.setAttribute("stroke-dasharray", "295 295"); // 完整圓圈
+
+    svg.appendChild(circle);
+    ball.prepend(svg);
+
     ball.onmouseenter = () => {
         if (!ball.classList.contains('selected')) {
             text.style.color = getMarkSixColor(i);
@@ -135,21 +149,25 @@ for (let i = 1; i <= 49; i++) {
     grid.appendChild(ball);
 }
 
-//  Co-occurrence Color Changing 
+// 新版本：用球外環完整度表示機率
 async function updateNumberVisualization() {
     const selectedArr = Array.from(selectedNumbers);
+    const circumference = 295; // 圓圈總長度
+
+    // 沒選號 → 全部恢復完整圈圈
     if (selectedArr.length === 0) {
-        // No number selected → All white
         document.querySelectorAll('.num-ball').forEach(ball => {
-            ball.style.backgroundColor = "#ffffff";
+            const circle = ball.querySelector('circle');
+            circle.setAttribute("stroke-dasharray", `${circumference} ${circumference}`);
+            ball.style.backgroundColor = "transparent";
         });
         return;
     }
 
-    // Calculate all scores
-    let allScores = [];
     let scoreMap = {};
+    let allScores = [];
 
+    // 計算每個號碼的分數
     for (let ball of document.querySelectorAll('.num-ball')) {
         const num = parseInt(ball.querySelector('.num-text').innerText);
         if (selectedNumbers.has(num)) continue;
@@ -162,19 +180,33 @@ async function updateNumberVisualization() {
             const testCombo = [...selectedArr, num].sort((a, b) => a - b);
             score = await countComboAppearance(testCombo);
         }
+
         scoreMap[num] = score;
         allScores.push(score);
     }
 
-    // Dynamically calculate maximum value
     const maxScore = Math.max(...allScores, 1);
-    updateColorScale(maxScore);
 
-    // Color
+    // 開始更新圈圈長度
     document.querySelectorAll('.num-ball').forEach(ball => {
         const num = parseInt(ball.querySelector('.num-text').innerText);
-        if (selectedNumbers.has(num)) return;
-        ball.style.backgroundColor = colorScale(scoreMap[num] || 0);
+        const circle = ball.querySelector('circle');
+        const color = getMarkSixColor(num);
+
+        if (selectedNumbers.has(num)) {
+            circle.setAttribute("stroke-dasharray", `${circumference} ${circumference}`);
+            circle.setAttribute("stroke", color);
+            ball.style.backgroundColor = "transparent";
+            return;
+        }
+
+        const score = scoreMap[num] || 0;
+        const percent = score / maxScore;
+        const visibleLength = percent * circumference;
+
+        circle.setAttribute("stroke-dasharray", `${visibleLength} ${circumference}`);
+        circle.setAttribute("stroke", color);
+        ball.style.backgroundColor = "transparent";
     });
 }
 
@@ -278,8 +310,6 @@ async function updateAllStats() {
     }
 
     await renderCompanionChart(sorted);
-
-    updateLegend();
 }
 
 // Single number statistics
