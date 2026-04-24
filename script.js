@@ -158,7 +158,9 @@ async function updateNumberVisualization() {
     if (selectedArr.length === 0) {
         document.querySelectorAll('.num-ball').forEach(ball => {
             const circle = ball.querySelector('circle');
+            circle.style.display = "block";
             circle.setAttribute("stroke-dasharray", `${circumference} ${circumference}`);
+            ball.style.opacity = "1";
             ball.style.backgroundColor = "transparent";
         });
         return;
@@ -193,19 +195,28 @@ async function updateNumberVisualization() {
         const circle = ball.querySelector('circle');
         const color = getMarkSixColor(num);
 
+        // Selected ball: Hidden outer ring, solid color
         if (selectedNumbers.has(num)) {
-            circle.setAttribute("stroke-dasharray", `${circumference} ${circumference}`);
-            circle.setAttribute("stroke", color);
+            circle.style.display = "none";
+            ball.style.opacity = "1";
             ball.style.backgroundColor = "transparent";
             return;
         }
 
+        // Unselected ball: Variations in both outer ring length and transparency
+        circle.style.display = "block";
         const score = scoreMap[num] || 0;
         const percent = score / maxScore;
-        const visibleLength = percent * circumference;
 
+        // Outer ring length
+        const visibleLength = percent * circumference;
         circle.setAttribute("stroke-dasharray", `${visibleLength} ${circumference}`);
         circle.setAttribute("stroke", color);
+
+        // Fading transparency: Minimum 0.2 ~ Maximum 1
+        const opacity = 0.2 + (percent * 0.8);
+        ball.style.opacity = opacity;
+
         ball.style.backgroundColor = "transparent";
     });
 }
