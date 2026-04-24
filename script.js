@@ -57,9 +57,13 @@ d3.csv("Mark_Six.csv").then(data => {
 });
 
 // Co-occurring color configuration (low white, high red)
-const colorScale = d3.scaleQuantize()
-    .domain([0, 100])
-    .range(["#ffffff", "#ffcccc", "#ff9999", "#ff6666", "#ff0000"]);
+let colorScale;
+
+function updateColorScale(maxCount) {
+    colorScale = d3.scaleQuantize()
+        .domain([0, maxCount])
+        .range(["#ffffff", "#ffcccc", "#ff9999", "#ff6666", "#ff0000"]);
+}
 
 let selectedNumbers = new Set();
 const maxSelections = 6;
@@ -105,7 +109,7 @@ for (let i = 1; i <= 49; i++) {
     };
 
     // Click to select
-    ball.onclick = () => {
+    ball.onclick = async () => {
         const num = i;
         const isSelected = ball.classList.contains('selected');
 
@@ -124,7 +128,7 @@ for (let i = 1; i <= 49; i++) {
         }
 
         // Refresh co-occurrence colors + statistics
-        updateNumberVisualization();
+        await updateNumberVisualization();
         updateAllStats();
     };
 
@@ -132,31 +136,52 @@ for (let i = 1; i <= 49; i++) {
 }
 
 //  Co-occurrence Color Changing 
-function updateNumberVisualization() {
+async function updateNumberVisualization() {
     const selectedArr = Array.from(selectedNumbers);
-    const isSingle = selectedArr.length === 1;
+    if (selectedArr.length === 0) {
+        // No number selected → All white
+        document.querySelectorAll('.num-ball').forEach(ball => {
+            ball.style.backgroundColor = "#ffffff";
+        });
+        return;
+    }
 
-    document.querySelectorAll('.num-ball').forEach(ball => {
+    // Calculate all scores
+    let allScores = [];
+    let scoreMap = {};
+
+    for (let ball of document.querySelectorAll('.num-ball')) {
         const num = parseInt(ball.querySelector('.num-text').innerText);
-        if (selectedNumbers.has(num)) return;
+        if (selectedNumbers.has(num)) continue;
 
         let score = 0;
-
-        if (isSingle) {
+        if (selectedArr.length === 1) {
             const s = selectedArr[0];
             score = Data.cooccurrence[s][num];
         } else {
             const testCombo = [...selectedArr, num].sort((a, b) => a - b);
-            score = countComboAppearance(testCombo);
+            score = await countComboAppearance(testCombo);
         }
+        scoreMap[num] = score;
+        allScores.push(score);
+    }
 
-        ball.style.backgroundColor = colorScale(score);
+    // Dynamically calculate maximum value
+    const maxScore = Math.max(...allScores, 1);
+    updateColorScale(maxScore);
+
+    // Color
+    document.querySelectorAll('.num-ball').forEach(ball => {
+        const num = parseInt(ball.querySelector('.num-text').innerText);
+        if (selectedNumbers.has(num)) return;
+        ball.style.backgroundColor = colorScale(scoreMap[num] || 0);
     });
 }
 
 // Dynamically updated legend
 function updateLegend() {
     const legend = document.getElementById("dynamicLegend");
+    if(!legend) return;
     legend.innerHTML = "";
 
     const range = colorScale.range();
@@ -189,26 +214,28 @@ function updateLegend() {
 
 // Number of times the combination appears
 function countComboAppearance(combo) {
-    let count = 0;
-    d3.csv("Mark_Six.csv").then(draws => {
-        draws.forEach(draw => {
-            const nums = [
-                +draw['Winning Number 1'], 
-                +draw['2'], 
-                +draw['3'],
-                +draw['4'], 
-                +draw['5'], 
-                +draw['6']
-            ];
-            const containsAll = combo.every(n => nums.includes(n));
-            if (containsAll) count++;
+    return new Promise(resolve => {
+        d3.csv("Mark_Six.csv").then(draws => {
+            let count = 0;
+            draws.forEach(draw => {
+                const nums = [
+                    +draw['Winning Number 1'],
+                    +draw['2'],
+                    +draw['3'],
+                    +draw['4'],
+                    +draw['5'],
+                    +draw['6']
+                ];
+                const containsAll = combo.every(n => nums.includes(n));
+                if (containsAll) count++;
+            });
+            resolve(count);
         });
     });
-    return count;
 }
 
 // Statistical Area Update 
-function updateAllStats() {
+async function updateAllStats() {
     const container = document.getElementById("statsContainer");
     const emptyState = document.getElementById("emptyState");
     const rightPanel = document.querySelector(".sidebar-right");
@@ -247,10 +274,10 @@ function updateAllStats() {
     if (selectedNumbers.size === 1) {
         updateStatsCard(sorted[0]);
     } else {
-        getCombinationStats(sorted);
+        await getCombinationStats(sorted);
     }
 
-    renderCompanionChart(sorted);
+    await renderCompanionChart(sorted);
 
     updateLegend();
 }
@@ -265,8 +292,8 @@ function updateStatsCard(num) {
 }
 
 // Combinatorial statistics
-function getCombinationStats(sortedNumbers) {
-    d3.csv("Mark_Six.csv").then(draws => {
+async function getCombinationStats(sortedNumbers) {
+    const draws = await d3.csv("Mark_Six.csv");
         let comboCount = 0;
         let mainComboCount = 0;
         let lastDrawDate = "N/A";
@@ -300,7 +327,6 @@ function getCombinationStats(sortedNumbers) {
         d3.select("#frequency").text(((comboCount / draws.length) * 100).toFixed(2) + "%");
         d3.select("#mainNumber").text(mainComboCount);
         d3.select("#lastSeen").text(lastDrawDate);
-    });
 }
 
 
@@ -465,7 +491,7 @@ modalOverlay.addEventListener("click", (e) => {
 });
 
 const resetBtn = document.getElementById("resetBtn");
-resetBtn.addEventListener("click", () => {
+resetBtn.addEventListener("click", async () => {
     // Clear selected numbers
     selectedNumbers.clear();
 
@@ -476,7 +502,7 @@ resetBtn.addEventListener("click", () => {
         ball.style.backgroundColor = ""; // Clear heatmap colors
     });
 
-    updateNumberVisualization();
+    await updateNumberVisualization();
     updateAllStats();
 });
 
