@@ -115,55 +115,69 @@
 
         <!-- Statistical Information Area -->
         <div class="sidebar-right">
-            <!-- Initial tooltip text -->
-            <div class="empty-state-text" id="emptyState">
-                Pick any number from the left to see its winning probability and statistics
+
+            <!-- Mode 1: Statistics panel used for Pick Numbers -->
+            <div id="panel-stats" class="panel-content">
+                <!-- Initial tooltip text -->
+                <div class="empty-state-text" id="emptyState">
+                    Pick any number from the left to see its winning probability and statistics
+                </div>
+
+                <!-- Statistics panel -->
+                <div class="stats-container" id="statsContainer" style="display: none; width: 100%;">
+                    <div class="stats-header">
+                        <div class="stats-icons" id="statsIcons">
+                        </div>
+                        <div class="stats-title">
+                            <h2>Number(s): <span id="selectedNumbersText">1</span></h2>
+                            <p>Statistical Analysis</p>
+                        </div>
+                    </div>
+            
+                    <!-- Statistical Card Area -->
+                    <div class="stats-cards">
+                        <div class="stat-card appearances">
+                            <div class="icon">↗</div>
+                            <div class="label">Appearances</div>
+                            <div class="value" id="appearances">0</div>
+                            <div style="color: #718096; font-size: 18px;">in 2522 draws</div>
+                        </div>
+                        <div class="stat-card frequency">
+                            <div class="icon">%</div>
+                            <div class="label">Frequency</div>
+                            <div class="value" id="frequency">0.00%</div>
+                            <div style="color: #718096; font-size: 18px;">appearance rate</div>
+                        </div>
+                        <div class="stat-card main">
+                            <div class="icon">🏆</div>
+                            <div class="label">Main Number</div>
+                            <div class="value" id="mainNumber">0</div>
+                            <div style="color: #718096; font-size: 18px;">times drawn</div>
+                        </div>
+                        <div class="stat-card last">
+                            <div class="icon">🗓️</div>
+                            <div class="label">Last Seen</div>
+                            <div class="value" id="lastSeen">N/A</div>
+                            <div style="color: #718096; font-size: 18px;">last appearance</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Bar chart Area -->
+                    <div id="chartWrapper" style="display: none; margin-top: 20px; width: 100%;">
+                        <h3 style="font-size: 30px; margin-bottom: 5px;">Most Common Companion Numbers</h3>
+                        <p style="color: #718096; font-size: 14px; margin-bottom: 10px;">Numbers that frequently appear together with your selection</p>
+                        <div id="companionChart" style="width: 100%;"></div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Statistics panel -->
-            <div class="stats-container" id="statsContainer" style="display: none; width: 100%;">
-                <div class="stats-header">
-                    <div class="stats-icons" id="statsIcons">
-                    </div>
-                    <div class="stats-title">
-                        <h2>Number(s): <span id="selectedNumbersText">1</span></h2>
-                        <p>Statistical Analysis</p>
-                    </div>
-                </div>
-        
-                <!-- Statistical Card Area -->
-                <div class="stats-cards">
-                    <div class="stat-card appearances">
-                        <div class="icon">↗</div>
-                        <div class="label">Appearances</div>
-                        <div class="value" id="appearances">0</div>
-                        <div style="color: #718096; font-size: 18px;">in 2522 draws</div>
-                    </div>
-                    <div class="stat-card frequency">
-                        <div class="icon">%</div>
-                        <div class="label">Frequency</div>
-                        <div class="value" id="frequency">0.00%</div>
-                        <div style="color: #718096; font-size: 18px;">appearance rate</div>
-                    </div>
-                    <div class="stat-card main">
-                        <div class="icon">🏆</div>
-                        <div class="label">Main Number</div>
-                        <div class="value" id="mainNumber">0</div>
-                        <div style="color: #718096; font-size: 18px;">times drawn</div>
-                    </div>
-                    <div class="stat-card last">
-                        <div class="icon">🗓️</div>
-                        <div class="label">Last Seen</div>
-                        <div class="value" id="lastSeen">N/A</div>
-                        <div style="color: #718096; font-size: 18px;">last appearance</div>
-                    </div>
-                </div>
-                
-                <!-- Bar chart Area -->
-                <div id="chartWrapper" style="display: none; margin-top: 20px; width: 100%;">
-                    <h3 style="font-size: 30px; margin-bottom: 5px;">Most Common Companion Numbers</h3>
-                    <p style="color: #718096; font-size: 14px; margin-bottom: 10px;">Numbers that frequently appear together with your selection</p>
-                    <div id="companionChart" style="width: 100%;"></div>
+            <!-- Mode 2: Frequency Page Dedicated Button Panel -->
+            <div id="panel-frequency" class="panel-content" style="display:none;">
+                <div style="padding:30px;">
+                    <h2 style="color:#990000;">Frequency Controls</h2>
+                    <button id="btnSortFreq" class="freq-btn">Sort By Frequency</button>
+                    <button id="btnSizeFreq" class="freq-btn">Size By Frequency</button>
+                    <button id="btnResetFreq" class="freq-btn">Reset Balls</button>
                 </div>
             </div>
         </div>
