@@ -560,17 +560,6 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
     link.click();
 });
 
-// Left sidebar navigation button toggles selected style
-const navButtons = document.querySelectorAll(".nav-btn");
-navButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-        // Remove all buttons from active
-        navButtons.forEach(b => b.classList.remove("active"));
-        // Add active to the current click
-        btn.classList.add("active");
-    });
-});
-
 // ========== Left navigation buttons + page switching ==========
 const navBtns = document.querySelectorAll(".nav-btn");
 const pages = document.querySelectorAll(".page");
