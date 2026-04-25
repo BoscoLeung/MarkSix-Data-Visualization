@@ -49,6 +49,7 @@ body, html {
 }
 .info-button:hover {
     background-color: #f0f0f0;
+    transform: scale(1.03);
 }
 .nav-menu {
     display: flex;
@@ -88,6 +89,7 @@ body, html {
 }
 .download-btn:hover {
     background-color: #f0f0f0;
+    transform: scale(1.03);
 }
 .page {
     display: none;
@@ -242,10 +244,11 @@ body, html {
     margin-top: 15px;
     margin-left: auto;
     margin-right: auto;
-    transition: all 0.2s ease; 
+    transition: all 0.2s ease;
 }
 .reset-button:hover {
     background-color: #e0e0e0;
+    transform: scale(1.03);
 }
 .reset-icon {
     font-size: 20px;
@@ -380,9 +383,11 @@ body, html {
 /* Basic style of D3 chart */
 .bar {
     fill: url(#gradient);
+    fill: #9333ea;
 }
 .bar:hover {
     opacity: 0.8;
+    fill: #ec4899;
 }
 .axis-label {
     font-size: 14px;
@@ -409,14 +414,33 @@ body, html {
     max-width: 100%;
     height: auto;
 }
-.bar {
-    fill: #9333ea;
-}
-.bar:hover {
-    fill: #ec4899;
-}
 .axis text {
     font-size: 12px;
+}
+
+/* Frequency page bottons*/
+.freq-btn {
+    display: block;
+    padding: 20px 24px;
+    margin: 20px 20px;
+    max-width: 400px;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 30px;
+    border: none;
+    background-color: #990000;
+    color: white;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.freq-btn:hover {
+    background-color: #b30000;
+    transform: scale(1.03);
+}
+.panel-content {
+    display: none;
+    width: 100%;
+    height: 100%;
 }
 
 /* Pop-up style */
