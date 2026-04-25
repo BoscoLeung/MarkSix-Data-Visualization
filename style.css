@@ -242,8 +242,7 @@ body, html {
     margin-top: 15px;
     margin-left: auto;
     margin-right: auto;
-    transition: all 0.2s ease;
-    
+    transition: all 0.2s ease; 
 }
 .reset-button:hover {
     background-color: #e0e0e0;
