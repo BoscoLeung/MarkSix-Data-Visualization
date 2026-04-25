@@ -89,6 +89,17 @@ body, html {
 .download-btn:hover {
     background-color: #f0f0f0;
 }
+.page {
+    display: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+.page.active-page {
+  display: block;
+  width: fit-content;
+  margin: 0 auto;
+  text-align: center;
+}
 
 /* Middle number ball area */
 .main-middle {
@@ -229,7 +240,10 @@ body, html {
     font-size: 20px;
     cursor: pointer;
     margin-top: 15px;
+    margin-left: auto;
+    margin-right: auto;
     transition: all 0.2s ease;
+    
 }
 .reset-button:hover {
     background-color: #e0e0e0;
