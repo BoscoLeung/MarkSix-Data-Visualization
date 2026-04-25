@@ -570,3 +570,31 @@ navButtons.forEach(btn => {
         btn.classList.add("active");
     });
 });
+
+// ========== Left navigation buttons + page switching ==========
+const navBtns = document.querySelectorAll(".nav-btn");
+const pages = document.querySelectorAll(".page");
+
+const pageIds = [
+    "page-pick",
+    "page-frequency",
+    "page-hotcold",
+    "page-cooccur",
+    "page-random",
+    "page-colour",
+    "page-distribution",
+    "page-prize",
+    "page-trend"
+];
+
+navBtns.forEach((btn, idx) => {
+    btn.addEventListener("click", () => {
+        // Button style switching
+        navBtns.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        // Page switching
+        pages.forEach(p => p.classList.remove("active-page"));
+        document.getElementById(pageIds[idx]).classList.add("active-page");
+    });
+});
