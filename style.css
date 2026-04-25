@@ -65,12 +65,16 @@ body, html {
     padding: 12px 0;
     cursor: pointer;
     border-bottom: 1px solid rgba(255,255,255,0.2);
+    transition: all 0.25s ease;
 }
 .nav-btn.active {
-    background-color: white;
+    background-color: #ffffff;
     color: #990000;
     border-radius: 8px;
     border-bottom: none;
+    font-size: 18px;
+    font-weight: bold;
+    transition: all 0.25s ease;
 }
 .download-btn {
     background-color: white;
