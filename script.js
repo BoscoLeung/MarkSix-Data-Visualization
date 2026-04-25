@@ -564,6 +564,7 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
 const navBtns = document.querySelectorAll(".nav-btn");
 const pages = document.querySelectorAll(".page");
 
+
 const pageIds = [
     "page-pick",
     "page-frequency",
@@ -576,14 +577,65 @@ const pageIds = [
     "page-trend"
 ];
 
+document.addEventListener("DOMContentLoaded", () => {
+    rightPanel.style.display = "block";
+});
+
+const panelStats = document.getElementById("panel-stats");
+const panelFreq = document.getElementById("panel-frequency");
+const rightPanel = document.querySelector(".sidebar-right");
+
 navBtns.forEach((btn, idx) => {
     btn.addEventListener("click", () => {
-        // Button style switching
+        // Button Style switching
         navBtns.forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
 
-        // Page switching
+        // Pages switching
         pages.forEach(p => p.classList.remove("active-page"));
         document.getElementById(pageIds[idx]).classList.add("active-page");
+
+        // Smart switching on the right panel
+        if (pageIds[idx] === "page-pick") {
+            rightPanel.style.display = "block";
+            rightPanel.style.backgroundColor = ""; 
+            panelStats.style.display = "block";
+            panelFreq.style.display = "none";
+        }
+        else if (pageIds[idx] === "page-frequency") {
+            rightPanel.style.display = "block";
+            rightPanel.style.backgroundColor = "#ffe6e6";
+            panelStats.style.display = "none";
+            panelFreq.style.display = "block";
+
+            resetAllBalls();
+        }
+        else {
+            rightPanel.style.display = "none";
+            rightPanel.classList.remove("active");
+
+            resetAllBalls();
+        }
     });
 });
+
+function resetAllBalls() {
+    selectedNumbers.clear();
+
+    document.querySelectorAll(".num-ball").forEach(ball => {
+        ball.classList.remove("selected");
+        const text = ball.querySelector(".num-text");
+        if (text) text.style.display = "flex";
+
+        ball.style.opacity = "1";
+        ball.style.backgroundColor = "transparent";
+
+        const circle = ball.querySelector("circle");
+        if (circle) {
+            circle.style.display = "block";
+            circle.setAttribute("stroke-dasharray", "295 295");
+        }
+    });
+
+    updateAllStats();
+}
