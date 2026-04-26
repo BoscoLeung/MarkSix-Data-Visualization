@@ -105,7 +105,7 @@ for (let i = 1; i <= 49; i++) {
     circle.setAttribute("cy", "50");
     circle.setAttribute("r", "47");
     circle.setAttribute("stroke", getMarkSixColor(i));
-    circle.setAttribute("stroke-dasharray", "295 295"); // 完整圓圈
+    circle.setAttribute("stroke-dasharray", "295 295");
 
     svg.appendChild(circle);
     ball.prepend(svg);
@@ -564,7 +564,6 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
 const navBtns = document.querySelectorAll(".nav-btn");
 const pages = document.querySelectorAll(".page");
 
-
 const pageIds = [
     "page-pick",
     "page-frequency",
@@ -576,10 +575,6 @@ const pageIds = [
     "page-prize",
     "page-trend"
 ];
-
-document.addEventListener("DOMContentLoaded", () => {
-    rightPanel.style.display = "block";
-});
 
 const panelStats = document.getElementById("panel-stats");
 const panelFreq = document.getElementById("panel-frequency");
@@ -609,6 +604,7 @@ navBtns.forEach((btn, idx) => {
             panelFreq.style.display = "block";
 
             resetAllBalls();
+            startFrequencyPage();
         }
         else {
             rightPanel.style.display = "none";
@@ -639,3 +635,166 @@ function resetAllBalls() {
 
     updateAllStats();
 }
+
+// ==============================
+// Frequency function
+// ==============================
+let freqData = {};
+let freqPositionData = [];
+
+// Fixed layout parameters
+const freqRows = 7;
+const freqCols = 7;
+const freqSpacing = 83;
+const offsetX = -26;
+const offsetY = 20;
+
+// Generate coordinates 1–49
+function generateFreqPositionData() {
+    let arr = [];
+    for (let i = 0; i < freqRows; i++) {
+        for (let j = 0; j < freqCols; j++) {
+            const n = i * freqCols + j + 1;
+            arr.push({
+                n: n,
+                x: j * freqSpacing + offsetX,
+                y: i * freqSpacing + offsetY
+            });
+        }
+    }
+    freqPositionData = arr;
+}
+
+// Create a dedicated DIV ball for Page 2
+function generateFreqDivBalls() {
+    const wrap = d3.select("#freq-ball-wrap");
+    wrap.selectAll(".num-ball").remove();
+    generateFreqPositionData();
+
+    const balls = wrap.selectAll(".num-ball")
+        .data(freqPositionData, d => d.n)
+        .enter()
+        .append("div")
+        .attr("class", "num-ball")
+        .style("left", d => d.x + "px")
+        .style("top", d => d.y + "px");
+
+    balls.append("div")
+        .attr("class", "ball-img")
+        .style("background-image", d => `url('images/ball-${d.n}.svg')`);
+
+    balls.append("span")
+        .attr("class", "num-text")
+        .text(d => d.n);
+
+    balls.each(function(d) {
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.classList.add("ball-ring");
+        svg.setAttribute("viewBox", "0 0 100 100");
+        const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        c.setAttribute("cx", "50");
+        c.setAttribute("cy", "50");
+        c.setAttribute("r", "47");
+        c.setAttribute("stroke", getMarkSixColor(d.n));
+        c.setAttribute("stroke-dasharray", "295 295");
+        svg.appendChild(c);
+        this.prepend(svg);
+    });
+}
+
+// Load frequency
+async function loadFrequencyData() {
+    const data = await d3.csv("Mark_Six.csv");
+    freqData = {};
+    data.forEach(d => {
+        const nums = [+d["Winning Number 1"], +d[2], +d[3], +d[4], +d[5], +d[6]];
+        nums.forEach(n => { freqData[n] = (freqData[n] || 0) + 1; });
+    });
+}
+
+// Once switch to Page 2
+async function startFrequencyPage() {
+    generateFreqPositionData();
+    generateFreqDivBalls();
+    await loadFrequencyData();
+
+    sortByFreq();
+}
+
+// SORT BY FREQUENCY function
+function sortByFreq() {
+    const minCount = d3.min(Object.values(freqData));
+    const maxCount = d3.max(Object.values(freqData));
+    const sizeScale = d3.scaleSqrt().domain([minCount, maxCount]).range([20, 75]);
+
+    const sortedNums = Object.keys(freqData).map(Number).sort((a, b) => freqData[b] - freqData[a]);
+
+    const newPosition = sortedNums.map((n, i) => ({
+        n: n,
+        x: freqPositionData[i].x,
+        y: freqPositionData[i].y
+    }));
+
+    d3.select("#freq-ball-wrap")
+        .selectAll(".num-ball")
+        .data(newPosition, d => d.n)
+        .transition()
+        .duration(1000)
+        .delay((d, i) => i * 50)
+        .style("left", d => d.x - (sizeScale(freqData[d.n]) - 70) / 2 + "px")
+        .style("top", d => d.y - (sizeScale(freqData[d.n]) - 70) / 2 + "px")
+        .style("width", d => sizeScale(freqData[d.n]) + "px")
+        .style("height", d => sizeScale(freqData[d.n]) + "px")
+        .on("start", function() {
+            d3.select(this).classed("selected", true);
+            d3.select(this).select(".num-text").style("display", "none");
+            d3.select(this).select(".ball-img").style("opacity", "1");
+        });
+}
+
+// SIZE BY FREQUENCY function
+function sizeByFreq() {
+    const minCount = d3.min(Object.values(freqData));
+    const maxCount = d3.max(Object.values(freqData));
+    const sizeScale = d3.scaleSqrt().domain([minCount, maxCount]).range([20, 75]);
+
+    d3.select("#freq-ball-wrap")
+        .selectAll(".num-ball")
+        .data(freqPositionData, d => d.n)
+        .transition()
+        .duration(500)
+        .delay((d, i) => i * 50)
+        .style("left", d => d.x - (sizeScale(freqData[d.n]) - 70) / 2 + "px")
+        .style("top", d => d.y - (sizeScale(freqData[d.n]) - 70) / 2 + "px")
+        .style("width", d => sizeScale(freqData[d.n]) + "px")
+        .style("height", d => sizeScale(freqData[d.n]) + "px")
+        .on("start", function() {
+            d3.select(this).classed("selected", true);
+            d3.select(this).select(".num-text").style("display", "none");
+            d3.select(this).select(".ball-img").style("opacity", "1");
+        });
+}
+
+// RESET function
+function resetFreqBalls() {
+    d3.select("#freq-ball-wrap")
+        .selectAll(".num-ball")
+        .data(freqPositionData, d => d.n)
+        .transition()
+        .duration(500)
+        .delay((d, i) => i * 10)
+        .style("left", d => d.x + "px")
+        .style("top", d => d.y + "px")
+        .style("width", "70px")
+        .style("height", "70px")
+        .on("end", function() {
+            d3.select(this).select(".num-text").style("display", "flex");
+            d3.select(this).select(".ball-img").style("opacity", "0");
+            d3.select(this).classed("selected", false);
+        });
+}
+
+// Button binding
+document.getElementById("btnSortFreq").onclick = sortByFreq;
+document.getElementById("btnSizeFreq").onclick = sizeByFreq;
+document.getElementById("btnResetFreq").onclick = resetFreqBalls;
