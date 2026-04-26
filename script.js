@@ -645,7 +645,7 @@ let freqPositionData = [];
 // Fixed layout parameters
 const freqRows = 7;
 const freqCols = 7;
-const freqSpacing = 83;
+const freqSpacing = 83.2;
 const offsetX = -26;
 const offsetY = 20;
 
