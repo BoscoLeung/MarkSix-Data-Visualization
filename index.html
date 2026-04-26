@@ -106,7 +106,22 @@
         
             <!-- Page 4 : Co-occurrence -->
             <div class="page" id="page-cooccur">
-                <h1 style="color:#990000;">How often do certain pairs or triplets of number occur together?</h1>
+                <h1 style="color:#990000;">How often do certain pairs occur together?</h1>
+
+                <div class="controls-container">
+                    <label for="thresholdSlider">Threshold (Minimum frequency to be shown)</label>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span>0</span>
+                      <input type="range" id="thresholdSlider" min="0" max="70" value="35">
+                      <span>70</span>
+                    </div>
+
+                    <div class="desc-text">
+                        Co-occurrence frequency: Higher = wider & lighter line | Lower = thinner & darker line
+                    </div>
+                </div>
+                
+                <div id="cooccur-svg-container"></div>
             </div>
         
             <!-- Page 5 : Randomness -->
@@ -204,6 +219,15 @@
                     <button id="btnResetFreq" class="freq-btn">Reset Balls</button>
                 </div>
             </div>
+
+            <!-- Mode 3: Hot & Cold Page Dont need Panel -->
+
+            <!-- Mode 4: Frequency Page Dedicated Button Panel -->
+            <div id="panel-cooccur" style="display:none;">
+                <h3>Top Number Pairs</h3>
+                <div id="top-pairs-container"></div>
+            </div>
+
         </div>
     </div>
 
