@@ -542,6 +542,7 @@ body, html {
 }
 .hc-col {
     max-width: 400px;
+    border: 1px solid #969696;
 }
 .hot-col{
     background: #fff5f2;
@@ -555,7 +556,7 @@ body, html {
 }
 .hc-col h3 {
     margin-top: 0;
-    font-size: 18px;
+    font-size: 20px;
 }
 .arrow-up { color: #e74c3c; }
 .arrow-down { color: #2980b9; }
@@ -581,6 +582,7 @@ body, html {
     align-items: center;
     justify-content: center;
     font-weight: bold;
+    font-size: 20px;
     color: #000;
     border: 3px solid;
     flex-shrink: 0;
