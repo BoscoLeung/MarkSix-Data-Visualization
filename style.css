@@ -97,7 +97,8 @@ body, html {
     box-sizing: border-box;
 }
 .page.active-page {
-  display: block;
+  display: flex;
+  flex-direction: column;
   width: fit-content;
   margin: 0 auto;
   text-align: center;
@@ -128,7 +129,6 @@ body, html {
     grid-template-columns: repeat(7, 1fr);
     gap: 10px;
     padding: 20px;
-    
 }
 .num-ball {
     position: relative;
@@ -207,6 +207,7 @@ body, html {
 .text-container-bottom {
     text-align: center;
     display: flex;
+    justify-content: center; 
     margin-top: 20px;
 }
 .legend-container {
@@ -494,4 +495,41 @@ body, html {
 .btn-fill {
     background-color: #b30000;
     color: white;
+}
+.freq-container {
+    width: 100%;
+    height: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.title-bar p {
+    text-align: center;
+    margin: 0;
+}
+.grid-container-freq {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    padding: 20px;
+    margin: 0 auto;
+}
+
+.grid-container-freq .num-ball {
+    width: 70px !important;
+    height: 70px !important;
+    font-size: 26px !important;
+}
+
+#freq-ball-wrap {
+    position: relative;
+    width: 520px;
+    height: 600px;
+    margin: 20px auto;
+}
+#freq-ball-wrap .num-ball {
+    position: absolute;
+    width: 70px;
+    height: 70px;
 }
