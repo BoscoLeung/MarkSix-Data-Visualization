@@ -104,7 +104,7 @@ body, html {
   text-align: center;
 }
 
-/* Middle number ball area */
+/* Page 1 middle number ball area */
 .main-middle {
     flex: 1;
     display: flex;
@@ -255,7 +255,7 @@ body, html {
     font-size: 20px;
 }
 
-/* Right-side statistics panel */
+/* Page 1 right-side statistics panel */
 .sidebar-right {
     width: 700px;
     background-color: transparent;
@@ -419,7 +419,7 @@ body, html {
     font-size: 12px;
 }
 
-/* Frequency page bottons*/
+/* Page 2 Frequency page bottons*/
 .freq-btn {
     display: block;
     padding: 20px 24px;
@@ -496,6 +496,8 @@ body, html {
     background-color: #b30000;
     color: white;
 }
+
+/* Page 2 middle ball area */
 .freq-container {
     width: 100%;
     height: 500px;
@@ -503,7 +505,6 @@ body, html {
     justify-content: center;
     align-items: center;
 }
-
 .title-bar p {
     text-align: center;
     margin: 0;
@@ -515,13 +516,11 @@ body, html {
     padding: 20px;
     margin: 0 auto;
 }
-
 .grid-container-freq .num-ball {
     width: 70px !important;
     height: 70px !important;
     font-size: 26px !important;
 }
-
 #freq-ball-wrap {
     position: relative;
     width: 520px;
@@ -532,4 +531,112 @@ body, html {
     position: absolute;
     width: 70px;
     height: 70px;
+}
+
+/* Hot & Cold Page */
+.hc-container {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    padding: 20px;
+}
+.hc-col {
+    max-width: 400px;
+}
+.hot-col{
+    background: #fff5f2;
+    border-radius: 8px;
+    padding: 15px;
+}
+.cold-col {
+    background: #f2faff;
+    border-radius: 8px;
+    padding: 15px;
+}
+.hc-col h3 {
+    margin-top: 0;
+    font-size: 18px;
+}
+.arrow-up { color: #e74c3c; }
+.arrow-down { color: #2980b9; }
+  
+.hc-item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    margin: 12px 0;
+    min-width: 400px;
+}
+.hc-rank {
+    font-size: 16px;
+    color: #666;
+    width: 30px;
+}
+.hc-ball {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #000;
+    border: 3px solid;
+    flex-shrink: 0;
+}
+.hc-ball-svg {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+    flex-shrink: 0;    
+    margin-left: 7px;
+}
+.hc-ball-svg img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+.hot-bar {
+    flex-grow: 1;
+    height: 8px;
+    background: #ffdddd;
+    border-radius: 4px;
+    position: relative;
+    min-width: 260px;
+}
+.hot-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: #e74c3c;
+    border-radius: 4px;
+}
+.cold-bar {
+    flex-grow: 1;
+    height: 8px;
+    background: #d4ebf8;
+    border-radius: 4px;
+    position: relative;
+    min-width: 260px;
+}
+.cold-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: #2980b9;
+    border-radius: 4px;
+}
+.hc-count {
+    width: 30px;
+    text-align: right;
+    font-weight: bold;
 }
