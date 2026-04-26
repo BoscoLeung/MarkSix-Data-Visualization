@@ -606,6 +606,12 @@ navBtns.forEach((btn, idx) => {
             resetAllBalls();
             startFrequencyPage();
         }
+        else if (pageIds[idx] === "page-hotcold") {
+            rightPanel.style.display = "none";
+            rightPanel.classList.remove("active");
+
+            startHotColdPage();
+        }
         else {
             rightPanel.style.display = "none";
             rightPanel.classList.remove("active");
@@ -637,7 +643,7 @@ function resetAllBalls() {
 }
 
 // ==============================
-// Frequency function
+// Page 2: Frequency functions
 // ==============================
 let freqData = {};
 let freqPositionData = [];
@@ -706,13 +712,27 @@ function generateFreqDivBalls() {
 async function loadFrequencyData() {
     const data = await d3.csv("Mark_Six.csv");
     freqData = {};
-    data.forEach(d => {
-        const nums = [+d["Winning Number 1"], +d[2], +d[3], +d[4], +d[5], +d[6]];
-        nums.forEach(n => { freqData[n] = (freqData[n] || 0) + 1; });
+  
+    data.forEach(draw => {
+        const allNumbers = [
+            +draw['Winning Number 1'],
+            +draw['2'],
+            +draw['3'],
+            +draw['4'],
+            +draw['5'],
+            +draw['6'],
+            +draw['Extra Number']
+        ];
+
+        allNumbers.forEach(n => {
+            if (n >= 1 && n <= 49) { 
+            freqData[n] = (freqData[n] || 0) + 1;
+            }
+        });
     });
 }
 
-// Once switch to Page 2
+// Execute when entering Page 2
 async function startFrequencyPage() {
     generateFreqPositionData();
     generateFreqDivBalls();
@@ -721,7 +741,7 @@ async function startFrequencyPage() {
     sortByFreq();
 }
 
-// SORT BY FREQUENCY function
+// Sort By Frequency function
 function sortByFreq() {
     const minCount = d3.min(Object.values(freqData));
     const maxCount = d3.max(Object.values(freqData));
@@ -752,7 +772,7 @@ function sortByFreq() {
         });
 }
 
-// SIZE BY FREQUENCY function
+// Size By Frequency function
 function sizeByFreq() {
     const minCount = d3.min(Object.values(freqData));
     const maxCount = d3.max(Object.values(freqData));
@@ -775,7 +795,7 @@ function sizeByFreq() {
         });
 }
 
-// RESET function
+// Reset function
 function resetFreqBalls() {
     d3.select("#freq-ball-wrap")
         .selectAll(".num-ball")
@@ -798,3 +818,77 @@ function resetFreqBalls() {
 document.getElementById("btnSortFreq").onclick = sortByFreq;
 document.getElementById("btnSizeFreq").onclick = sizeByFreq;
 document.getElementById("btnResetFreq").onclick = resetFreqBalls;
+
+// ==============================
+// Page 3: Hot & Cold functions
+// ==============================
+async function startHotColdPage() {
+    await loadFrequencyData();
+  
+    const freqArray = Object.entries(freqData)
+      .map(([n, count]) => ({ n: +n, count }));
+  
+    const sortedHot = [...freqArray].sort((a, b) => b.count - a.count).slice(0, 10);
+    const sortedCold = [...freqArray].sort((a, b) => a.count - b.count).slice(0, 10);
+  
+    const maxCount = d3.max(freqArray, d => d.count);
+  
+    // Hot list
+    const hotList = d3.select("#hot-list");
+    hotList.html("");
+  
+    sortedHot.forEach((item, i) => {
+        const row = hotList.append("div").attr("class", "hc-item");
+        row.append("span").attr("class", "hc-rank").text(`#${i + 1}`);
+  
+        // Top 1-3 = 你原本的 SVG 球
+        if (i < 3) {
+            const svgWrap = row.append("div").attr("class", "hc-ball-svg");
+            svgWrap.append("img")
+                .attr("src", `images/ball-${item.n}.svg`)
+                .attr("alt", item.n)
+                .style("width", "100%")
+                .style("height", "100%");
+        } else {
+            row.append("div")
+                .attr("class", "hc-ball")
+                .style("border-color", getMarkSixColor(item.n))
+                .text(item.n);
+        }
+  
+        const bar = row.append("div").attr("class", "hot-bar");
+        bar.append("div")
+            .attr("class", "hot-bar-fill")
+            .style("width", `${(item.count / maxCount) * 100}%`);
+  
+        row.append("span").attr("class", "hc-count").text(item.count);
+    });
+  
+    // Cold list
+    const coldList = d3.select("#cold-list");
+    coldList.html("");
+  
+    sortedCold.forEach((item, i) => {
+        const row = coldList.append("div").attr("class", "hc-item");
+        row.append("span").attr("class", "hc-rank").text(`#${i + 1}`);
+  
+        if (i < 3) {
+            const svgWrap = row.append("div").attr("class", "hc-ball-svg");
+            svgWrap.append("img")
+                .attr("src", `images/ball-${item.n}.svg`)
+                .attr("alt", item.n);
+        } else {
+            row.append("div")
+                .attr("class", "hc-ball")
+                .style("border-color", getMarkSixColor(item.n))
+                .text(item.n);
+        }
+  
+        const bar = row.append("div").attr("class", "cold-bar");
+        bar.append("div")
+            .attr("class", "cold-bar-fill")
+            .style("width", `${(item.count / maxCount) * 100}%`);
+  
+        row.append("span").attr("class", "hc-count").text(item.count);
+    });
+}
