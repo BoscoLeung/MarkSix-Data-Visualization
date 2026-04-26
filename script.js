@@ -576,9 +576,10 @@ const pageIds = [
     "page-trend"
 ];
 
+const rightPanel = document.querySelector(".sidebar-right");
 const panelStats = document.getElementById("panel-stats");
 const panelFreq = document.getElementById("panel-frequency");
-const rightPanel = document.querySelector(".sidebar-right");
+const panelCooccur = document.getElementById("panel-cooccur");
 
 navBtns.forEach((btn, idx) => {
     btn.addEventListener("click", () => {
@@ -596,12 +597,14 @@ navBtns.forEach((btn, idx) => {
             rightPanel.style.backgroundColor = ""; 
             panelStats.style.display = "block";
             panelFreq.style.display = "none";
+            panelCooccur.style.display = "none";
         }
         else if (pageIds[idx] === "page-frequency") {
             rightPanel.style.display = "block";
             rightPanel.style.backgroundColor = "#ffe6e6";
             panelStats.style.display = "none";
             panelFreq.style.display = "block";
+            panelCooccur.style.display = "none";
 
             resetAllBalls();
             startFrequencyPage();
@@ -611,6 +614,15 @@ navBtns.forEach((btn, idx) => {
             rightPanel.classList.remove("active");
 
             startHotColdPage();
+        }
+        else if (pageIds[idx] === "page-cooccur") {
+            rightPanel.style.display = "block";
+            rightPanel.style.backgroundColor = "#e6f0ff";
+            panelStats.style.display = "none"; 
+            panelFreq.style.display = "none";
+            panelCooccur.style.display = "block";
+        
+            startCooccurPage();
         }
         else {
             rightPanel.style.display = "none";
@@ -643,7 +655,7 @@ function resetAllBalls() {
 }
 
 // ==============================
-// Page 2: Frequency functions
+// Page 2: Frequency
 // ==============================
 let freqData = {};
 let freqPositionData = [];
@@ -820,7 +832,7 @@ document.getElementById("btnSizeFreq").onclick = sizeByFreq;
 document.getElementById("btnResetFreq").onclick = resetFreqBalls;
 
 // ==============================
-// Page 3: Hot & Cold functions
+// Page 3: Hot & Cold
 // ==============================
 async function startHotColdPage() {
     await loadFrequencyData();
@@ -892,3 +904,199 @@ async function startHotColdPage() {
         row.append("span").attr("class", "hc-count").text(item.count);
     });
 }
+
+// ==============================
+// Page 4: Co-occurrence
+// ==============================
+let cooccurMatrix = {};
+let cooccurSvg;
+let linksGroup;
+let nodesGroup;
+
+async function startCooccurPage() {
+    await buildCooccurrenceMatrix();
+
+  // Create an SVG canvas
+  const width = 800;
+  const height = 800;
+  const radius = Math.min(width, height) / 2 - 40;
+
+  const container = d3.select("#cooccur-svg-container");
+
+  container.html("");
+  cooccurSvg = container.append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g")
+    .attr("transform", `translate(${width/2}, ${height/2})`);
+
+  linksGroup = cooccurSvg.append("g").attr("class", "links");
+  nodesGroup = cooccurSvg.append("g").attr("class", "nodes");
+
+  // Generate circular arrangement of node positions
+  const numbers = d3.range(1, 50); // 1-49
+  const angleStep = (2 * Math.PI) / numbers.length;
+  const positions = {};
+  numbers.forEach((n, i) => {
+    const angle = i * angleStep - Math.PI / 2; // Arrange from top to bottom
+    positions[n] = {
+      x: radius * Math.cos(angle),
+      y: radius * Math.sin(angle)
+    };
+  });
+
+  // Draw nodes (number circles)
+  nodesGroup.selectAll("circle.cooccur-node")
+    .data(numbers)
+    .join("circle")
+    .attr("class", "cooccur-node")
+    .attr("cx", d => positions[d].x)
+    .attr("cy", d => positions[d].y)
+    .attr("r", 18);
+
+  nodesGroup.selectAll("text.cooccur-text")
+    .data(numbers)
+    .join("text")
+    .attr("class", "cooccur-text")
+    .attr("x", d => positions[d].x)
+    .attr("y", d => positions[d].y)
+    .attr("dominant-baseline", "middle")
+    .text(d => d);
+
+  // Slide bar event: Update link
+  const slider = d3.select("#thresholdSlider");
+  slider.on("input", () => {
+    const threshold = +slider.property("value");
+    drawCooccurrenceLinks(positions, threshold);
+  });
+
+  // Initially display (threshold=28)
+  drawCooccurrenceLinks(positions, 28);
+
+  renderTopPairs();
+}
+
+// Establish co-occurrence matrix
+async function buildCooccurrenceMatrix() {
+  const data = await d3.csv("Mark_Six.csv");
+  cooccurMatrix = {};
+
+  // Initialization matrix
+  for (let a = 1; a <= 49; a++) {
+    cooccurMatrix[a] = {};
+    for (let b = 1; b <= 49; b++) {
+      cooccurMatrix[a][b] = 0;
+    }
+  }
+
+  // Count the co-occurrences of each group of numbers
+  data.forEach(d => {
+    const nums = [
+      +d["Winning Number 1"], 
+      +d["2"], 
+      +d["3"], 
+      +d["4"], 
+      +d["5"], 
+      +d["6"], 
+      +d["Extra Number"]
+    ].filter(n => !isNaN(n));
+
+    // Pairwise pairing statistics
+    for (let i = 0; i < nums.length; i++) {
+      for (let j = i + 1; j < nums.length; j++) {
+        const a = nums[i];
+        const b = nums[j];
+        if (a !== b) {
+          cooccurMatrix[a][b]++;
+          cooccurMatrix[b][a]++;
+        }
+      }
+    }
+  });
+}
+
+// Draw links based on thresholds
+function drawCooccurrenceLinks(positions, threshold) {
+    const links = [];
+    // First, collect all links that are greater than or equal to the threshold
+    // Then find the maximum number of occurrences to facilitate setting the scale
+    let maxCount = 0;
+    for (let a = 1; a <= 49; a++) {
+      for (let b = a + 1; b <= 49; b++) {
+        const count = cooccurMatrix[a][b];
+        if (count >= threshold) {
+          links.push({
+            source: a,
+            target: b,
+            count: count
+          });
+          if (count > maxCount) maxCount = count;
+        }
+      }
+    }
+  
+    // The more, the wider the line
+    const widthScale = d3.scaleLinear()
+      .domain([threshold, maxCount])
+      .range([0.5, 10]);
+  
+    // The more, the lighter the color
+    const colorScale = d3.scaleLinear()
+      .domain([threshold, maxCount])
+      .range(["#2c3e80", "#b0b8e8"]);
+  
+    // Update lines
+    const linkSelection = linksGroup.selectAll("line.cooccur-link")
+      .data(links, d => `${d.source}-${d.target}`);
+  
+    linkSelection.exit().remove();
+  
+    linkSelection.enter()
+      .append("line")
+      .attr("class", "cooccur-link")
+      .merge(linkSelection)
+      .attr("x1", d => positions[d.source].x)
+      .attr("y1", d => positions[d.source].y)
+      .attr("x2", d => positions[d.target].x)
+      .attr("y2", d => positions[d.target].y)
+      .style("stroke-width", d => widthScale(d.count))
+      .style("stroke", d => colorScale(d.count))
+      .style("stroke-opacity", 0.8);
+}
+
+function renderTopPairs() {
+    if (!cooccurMatrix) return;
+  
+    const allPairs = [];
+    for (let a = 1; a <= 49; a++) {
+      for (let b = a + 1; b <= 49; b++) {
+        const cnt = cooccurMatrix[a][b];
+        if (cnt > 0) {
+          allPairs.push({ a, b, cnt });
+        }
+      }
+    }
+  
+    // Take the Top 10 pairs
+    const topPairs = allPairs.sort((x, y) => y.cnt - x.cnt).slice(0, 10);
+  
+    const container = document.getElementById("top-pairs-container");
+    container.innerHTML = "";
+  
+    topPairs.forEach(p => {
+      const el = document.createElement("div");
+      el.className = "pair-card";
+      el.innerHTML = `
+        <div class="pair-left">
+          <div class="pair-ball purple">${p.a}</div>
+          <span class="pair-arrow">↔</span>
+          <div class="pair-ball blue">${p.b}</div>
+        </div>
+        <div class="pair-right">
+          <div class="pair-count">${p.cnt}</div>
+          <div class="pair-text">times</div>
+        </div>
+      `;
+      container.appendChild(el);
+    });
+  }
