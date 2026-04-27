@@ -775,3 +775,12 @@ body, html {
     padding: 12px 20px;
     font-size: 15px;
 }
+.page5-data-note {
+    margin-top: 80px;
+    padding-top: 16px;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.7;
+    text-align: center;
+    border-top: 1px solid #e5e5e5;
+}
