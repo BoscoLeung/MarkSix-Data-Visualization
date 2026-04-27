@@ -67,15 +67,16 @@ function updateColorScale(maxCount) {
 
 let selectedNumbers = new Set();
 const maxSelections = 6;
+const redNumbers = [1,2,7,8,12,13,18,19,23,24,29,30,34,35,40,45,46];
+const blueNumbers = [3,4,9,10,14,15,20,25,26,31,36,37,41,42,47,48];
+const greenNumbers = [5,6,11,16,17,21,22,27,28,32,33,38,39,43,44,49];
 
 // Number ball color
 function getMarkSixColor(num) {
-    const red = [1,2,7,8,12,13,18,19,23,24,29,30,34,35,40,45,46];
-    const blue = [3,4,9,10,14,15,20,25,26,31,36,37,41,42,47,48];
-    const green = [5,6,11,16,17,21,22,27,28,32,33,38,39,43,44,49];
-    if (red.includes(num)) return "#ff3131";
-    if (blue.includes(num)) return "#0070ff";
-    return "#28a745";
+
+    if (redNumbers.includes(num)) return "#ff3131";
+    if (blueNumbers.includes(num)) return "#0070ff";
+    if (greenNumbers.includes(num)) return "#28a745";
 }
 
 // Generate Numbered Balls (Preserving Image Style) 
@@ -580,6 +581,7 @@ const rightPanel = document.querySelector(".sidebar-right");
 const panelStats = document.getElementById("panel-stats");
 const panelFreq = document.getElementById("panel-frequency");
 const panelCooccur = document.getElementById("panel-cooccur");
+const panelColour = document.getElementById("panel-colour");
 
 navBtns.forEach((btn, idx) => {
     btn.addEventListener("click", () => {
@@ -598,6 +600,7 @@ navBtns.forEach((btn, idx) => {
             panelStats.style.display = "block";
             panelFreq.style.display = "none";
             panelCooccur.style.display = "none";
+            panelColour.style.display = "none";
         }
         else if (pageIds[idx] === "page-frequency") {
             rightPanel.style.display = "block";
@@ -605,6 +608,7 @@ navBtns.forEach((btn, idx) => {
             panelStats.style.display = "none";
             panelFreq.style.display = "block";
             panelCooccur.style.display = "none";
+            panelColour.style.display = "none";
 
             resetAllBalls();
             startFrequencyPage();
@@ -621,17 +625,25 @@ navBtns.forEach((btn, idx) => {
             panelStats.style.display = "none"; 
             panelFreq.style.display = "none";
             panelCooccur.style.display = "block";
+            panelColour.style.display = "none";
         
             startCooccurPage();
         }
         else if (pageIds[idx] === "page-random") {
             rightPanel.style.display = "none";
-            rightPanel.style.backgroundColor = "#e6f0ff";
-            panelStats.style.display = "none"; 
-            panelFreq.style.display = "none";
-            panelCooccur.style.display = "none";
+            rightPanel.classList.remove("active");
         
             startRandomnessPage();
+        }
+        else if (pageIds[idx] === "page-colour") {
+            rightPanel.style.display = "block";
+            rightPanel.style.backgroundColor = "#ffe6e6"; 
+            panelStats.style.display = "none";
+            panelFreq.style.display = "none";
+            panelCooccur.style.display = "none";
+            panelColour.style.display = "block";
+        
+            startColourPage();
         }
         else {
             rightPanel.style.display = "none";
@@ -1410,4 +1422,325 @@ function drawSumChart(sumList) {
 
     g.append("g")
         .call(d3.axisLeft(y));
+}
+
+// ==============================
+// Page 6: Colour Chart
+// ==============================
+let colourDrawData = [];
+let colourSortMode = null; 
+
+async function startColourPage() {
+  const raw = await d3.csv("Mark_Six.csv");
+
+  colourDrawData = raw.map(d => {
+    const main = [
+      +d["Winning Number 1"],
+      +d["2"],
+      +d["3"],
+      +d["4"],
+      +d["5"],
+      +d["6"]
+    ].filter(n => !isNaN(n));
+
+    const extra = +d["Extra Number"] || null;
+    return {
+      date: d["Date"],
+      main,
+      extra
+    };
+  });
+
+  d3.select("#includeExtra").on("change", updateColourChart);
+  updateColourChart();
+}
+
+function updateColourChart() {
+  const includeExtra = d3.select("#includeExtra").property("checked");
+  computeColourStats(includeExtra);
+  drawColourBarChart();
+  drawColourDrawTable();
+}
+
+let colourSummary = [];
+
+function computeColourStats(includeExtra) {
+    let redMain = 0, redExtra = 0;
+    let blueMain = 0, blueExtra = 0;
+    let greenMain = 0, greenExtra = 0;
+  
+    colourDrawData.forEach(row => {
+      // 只算 main
+      row.main.forEach(n => {
+        if(redNumbers.includes(n)) redMain++;
+        if(blueNumbers.includes(n)) blueMain++;
+        if(greenNumbers.includes(n)) greenMain++;
+      });
+      // extra 單獨計算
+      if(row.extra) {
+        const n = row.extra;
+        if(redNumbers.includes(n)) redExtra++;
+        if(blueNumbers.includes(n)) blueExtra++;
+        if(greenNumbers.includes(n)) greenExtra++;
+      }
+    });
+  
+    colourSummary = [
+      {
+        name: "Red",
+        main: redMain,
+        extra: redExtra,
+        total: redMain + redExtra,
+        fill: "#ff6b6b"
+      },
+      {
+        name: "Blue",
+        main: blueMain,
+        extra: blueExtra,
+        total: blueMain + blueExtra,
+        fill: "#4dabf7"
+      },
+      {
+        name: "Green",
+        main: greenMain,
+        extra: greenExtra,
+        total: greenMain + greenExtra,
+        fill: "#51c466"
+      }
+    ];
+}
+
+function drawColourBarChart() {
+  const container = d3.select("#colour-summary-chart");
+  container.html("");
+
+  const width = 800;
+  const height = 600;
+  const margin = { top: 40, right: 30, bottom: 50, left: 70 };
+
+  const svg = container.append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+  const includeExtra = d3.select("#includeExtra").property("checked");
+
+  const x = d3.scaleBand()
+    .domain(["Red", "Blue", "Green"])
+    .range([0, width])
+    .padding(0.4);
+
+  // Fixed Y-axis
+  const fixedMax = d3.max(colourSummary, d => d.total);
+  const y = d3.scaleLinear()
+    .domain([0, fixedMax])
+    .range([height, 0]);
+
+  svg.append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(x).tickSize(0))
+    .style("font-size", "16px");
+
+  svg.append("g")
+    .call(d3.axisLeft(y).ticks(10))
+    .style("font-size", "13px");
+
+// Main bar
+svg.selectAll("rect.main")
+  .data(colourSummary)
+  .enter()
+  .append("rect")
+  .attr("class", "main-bar")
+  .attr("x", d => x(d.name))
+  .attr("y", d => y(d.main))
+  .attr("width", x.bandwidth())
+  .attr("height", d => height - y(d.main))
+  .attr("fill", d => d.fill)
+  .attr("rx", 6)
+  .style("cursor", "pointer")
+  // Preset transparency (light color, gentle on the eyes)
+  .style("opacity", 0.75)
+  .on("click", function(e, d) {
+    const key = d.name.toLowerCase();
+    // Repeated click = Cancel sorting
+    colourSortMode = (colourSortMode === key) ? null : key;
+
+    // Reset all bars globally to the default style.
+    svg.selectAll(".main-bar")
+      .style("opacity", 0.75)
+      .style("stroke", "none")
+      .style("stroke-width", 0);
+
+    // Currently clicked bar highlighted
+    if(colourSortMode){
+      d3.select(this)
+        .style("opacity", 1)
+        .style("stroke", "#222")
+        .style("stroke-width", 3);
+    }
+
+    // Re-render the right-hand number grouping
+    drawColourDrawTable();
+  });
+
+  // Check the box, then Draw Extra + separator line
+  if (includeExtra) {
+    svg.selectAll("rect.extra")
+      .data(colourSummary)
+      .enter()
+      .append("rect")
+      .attr("class", "extra")
+      .attr("x", d => x(d.name))
+      .attr("y", d => y(d.total))
+      .attr("width", x.bandwidth())
+      .attr("height", d => y(d.main) - y(d.total))
+      .attr("fill", d => d.fill)
+      .attr("opacity", 0.3)
+      .attr("rx", 4);
+
+    // White dividing line
+    svg.selectAll(".divider")
+      .data(colourSummary)
+      .enter()
+      .append("line")
+      .attr("x1", d => x(d.name))
+      .attr("x2", d => x(d.name) + x.bandwidth())
+      .attr("y1", d => y(d.main))
+      .attr("y2", d => y(d.main))
+      .attr("stroke", "#fff")
+      .attr("stroke-width", 2);
+  }
+
+  //Text display logic
+  if (includeExtra) {
+    // Main in the center of the bar.
+    svg.selectAll(".text-main-inside")
+      .data(colourSummary)
+      .enter()
+      .append("text")
+      .attr("x", d => x(d.name) + x.bandwidth() / 2)
+      .attr("y", d => height - (height - y(d.main)) / 2)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .text(d => d.main)
+      .style("fill", "#000")
+      .style("font-weight", "bold")
+      .style("font-size", "16px");
+
+    // Extra in the center of the light-colored area.
+    svg.selectAll(".text-extra-inside")
+      .data(colourSummary)
+      .enter()
+      .append("text")
+      .attr("x", d => x(d.name) + x.bandwidth() / 2)
+      .attr("y", d => y(d.total) + (y(d.main) - y(d.total)) / 2)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .text(d => d.extra)
+      .style("fill", "#000")
+      .style("font-weight", "bold")
+      .style("font-size", "15px");
+
+    // Top: Total
+    svg.selectAll(".text-total")
+      .data(colourSummary)
+      .enter()
+      .append("text")
+      .attr("x", d => x(d.name) + x.bandwidth() / 2)
+      .attr("y", d => y(d.total) - 12)
+      .attr("text-anchor", "middle")
+      .text(d => `Total: ${d.total}`)
+      .style("fill", "#222")
+      .style("font-weight", "bold")
+      .style("font-size", "15px");
+
+  } else {
+    // Top: Main
+    svg.selectAll(".text-only-main")
+      .data(colourSummary)
+      .enter()
+      .append("text")
+      .attr("x", d => x(d.name) + x.bandwidth() / 2)
+      .attr("y", d => y(d.main) - 12)
+      .attr("text-anchor", "middle")
+      .text(d => d.main)
+      .style("fill", "#222")
+      .style("font-weight", "bold")
+      .style("font-size", "16px");
+  }
+
+  svg.append("text")
+  .attr("x", width / 2)
+  .attr("y", height + 45)
+  .attr("text-anchor", "middle")
+  .style("font-size", "14px")
+  .style("fill", "#444")
+  .style("font-weight", "500")
+  .text("Click a color bar to group same-color balls on the right. Click again to reset");
+
+}
+
+// Right panel: Lottery results table
+function drawColourDrawTable() {
+    const wrap = d3.select("#colour-detail-table");
+    wrap.html("");
+    const includeExtra = d3.select("#includeExtra").property("checked");
+  
+    let showList = [...colourDrawData];
+  
+    // Sorting logic: First color + Second color + Last color
+    showList.forEach(row => {
+      let nums = includeExtra 
+        ? [...row.main, row.extra].filter(n => n) 
+        : [...row.main];
+  
+      if (colourSortMode) {
+        let first  = []; // Selected color
+        let second = []; 
+        let third  = []; 
+  
+        nums.forEach(n => {
+          const isRed = redNumbers.includes(n);
+          const isBlue = blueNumbers.includes(n);
+          const isGreen = greenNumbers.includes(n);
+  
+          if (colourSortMode === 'red') {
+            if (isRed) first.push(n);
+            else if (isBlue) second.push(n);
+            else third.push(n);
+          }
+          else if (colourSortMode === 'blue') {
+            if (isBlue) first.push(n);
+            else if (isGreen) second.push(n);
+            else third.push(n);
+          }
+          else if (colourSortMode === 'green') {
+            if (isGreen) first.push(n);
+            else if (isRed) second.push(n);
+            else third.push(n);
+          }
+        });
+  
+        row.sortedNums = [...first, ...second, ...third];
+      } else {
+        row.sortedNums = nums;
+      }
+    });
+  
+    // Draw
+    showList.forEach(row => {
+      const line = wrap.append("div").attr("class", "draw-row");
+  
+      line.append("div")
+        .attr("class", "draw-date")
+        .text(row.date);
+  
+      row.sortedNums.forEach(n => {
+        line.append("div")
+          .attr("class", "colour-ball")
+          .style("background", getMarkSixColor(n))
+          .text(n);
+      });
+    });
 }
