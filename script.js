@@ -582,6 +582,7 @@ const panelStats = document.getElementById("panel-stats");
 const panelFreq = document.getElementById("panel-frequency");
 const panelCooccur = document.getElementById("panel-cooccur");
 const panelColour = document.getElementById("panel-colour");
+const panelDistri = document.getElementById("panel-distribution");
 
 navBtns.forEach((btn, idx) => {
     btn.addEventListener("click", () => {
@@ -601,6 +602,7 @@ navBtns.forEach((btn, idx) => {
             panelFreq.style.display = "none";
             panelCooccur.style.display = "none";
             panelColour.style.display = "none";
+            panelDistri.style.display = "none";
         }
         else if (pageIds[idx] === "page-frequency") {
             rightPanel.style.display = "block";
@@ -609,7 +611,8 @@ navBtns.forEach((btn, idx) => {
             panelFreq.style.display = "block";
             panelCooccur.style.display = "none";
             panelColour.style.display = "none";
-
+            panelDistri.style.display = "none";
+            
             resetAllBalls();
             startFrequencyPage();
         }
@@ -626,6 +629,7 @@ navBtns.forEach((btn, idx) => {
             panelFreq.style.display = "none";
             panelCooccur.style.display = "block";
             panelColour.style.display = "none";
+            panelDistri.style.display = "none";
         
             startCooccurPage();
         }
@@ -642,8 +646,20 @@ navBtns.forEach((btn, idx) => {
             panelFreq.style.display = "none";
             panelCooccur.style.display = "none";
             panelColour.style.display = "block";
+            panelDistri.style.display = "none";
         
             startColourPage();
+        }
+        else if (pageIds[idx] === "page-distribution") {
+            rightPanel.style.display = "block";
+            rightPanel.style.backgroundColor = "#ffe6e6";
+            panelStats.style.display = "none";
+            panelFreq.style.display = "none";
+            panelCooccur.style.display = "none";
+            panelColour.style.display = "none";
+            panelDistri.style.display = "block";
+        
+            startWeekdayHeatmap();
         }
         else {
             rightPanel.style.display = "none";
@@ -1792,4 +1808,173 @@ function drawColourDrawTable() {
           .text(n);
       });
     });
+}
+
+// ==============================
+// Page 7 - Weekday Heatmap
+// ==============================
+let weekdayFullData = [];
+let includeExtraNumber = false;
+let currentWeekday = "All";
+let rawData = [];
+
+async function startWeekdayHeatmap() {
+  rawData = await d3.csv("Mark_Six.csv");
+  
+  // First Statistical
+  recalculateData();
+  
+  // Draw Heatmap
+  drawHeatmap(currentWeekday);
+
+  // Weekday buttons
+  d3.selectAll(".weekday-btn").on("click", function(){
+    d3.selectAll(".weekday-btn").classed("active", false);
+    d3.select(this).classed("active", true);
+    currentWeekday = d3.select(this).text();
+    drawHeatmap(currentWeekday);
+  });
+
+  // Extra toggle (Statistics will now be reset)
+  d3.select("#btn-main-only").on("click", function () {
+    includeExtraNumber = false;
+    d3.selectAll(".extra-btn").classed("active", false);
+    d3.select(this).classed("active", true);
+    
+    // Re-statistics and re-draw
+    recalculateData(); 
+    drawHeatmap(currentWeekday);
+  });
+  
+  d3.select("#btn-include-extra").on("click", function () {
+    includeExtraNumber = true;
+    d3.selectAll(".extra-btn").classed("active", false);
+    d3.select(this).classed("active", true);
+    
+    recalculateData();
+    drawHeatmap(currentWeekday);
+  });
+}
+
+// Recalculate statistics based on includeExtraNumber
+function recalculateData() {
+  const count = {};
+  const weekdays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+
+  weekdays.forEach(w => count[w] = Array(50).fill(0));
+  count.All = Array(50).fill(0);
+
+  rawData.forEach(row => {
+    const wd = row.Weekday.trim();
+    const nums = [
+      +row["Winning Number 1"], 
+      +row["2"], 
+      +row["3"],
+      +row["4"], 
+      +row["5"], 
+      +row["6"]
+    ];
+
+    // Switch to Extra number mode
+    if (includeExtraNumber) {
+      nums.push(+row["Extra Number"]);
+    }
+
+    nums.forEach(n => {
+      if(n>=1 && n<=49) {
+        count[wd][n]++;
+        count.All[n]++;
+      }
+    });
+  });
+
+  weekdayFullData = count;
+}
+
+// Draw Heatmap
+function drawHeatmap(targetDay) {
+    const container = d3.select("#weekday-heatmap");
+    container.html("");
+  
+    const cols = 7;
+    const rows = 7;
+    const cellSize = 100;
+    const width = cols * cellSize;
+    const height = rows * cellSize;
+    const margin = { top: 40, right: 20, bottom: 20, left: 20 };
+  
+    const svg = container.append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", `translate(${margin.left}, ${margin.top})`);
+  
+    // Prepare data: 1~49, corresponding to each cell.
+    const numbers = Array.from({ length: 49 }, (_, i) => i + 1);
+    const data = numbers.map((num, i) => ({
+      num: num,
+      count: weekdayFullData[targetDay][num],
+      // Calculate cell position: which column, which row
+      col: i % cols,
+      row: Math.floor(i / cols)
+    }));
+  
+    // Color mapping: darker = more layers
+    const maxVal = d3.max(data, d => d.count);
+    const colorScale = d3.scaleSequential()
+      .domain([0, maxVal])
+      .interpolator(d3.interpolateYlOrRd); // Yellow → Orange → Red
+  
+    // Draw grid
+    svg.selectAll(".heat-cell")
+      .data(data)
+      .enter()
+      .append("rect")
+      .attr("class", "heat-cell")
+      .attr("x", d => d.col * cellSize)
+      .attr("y", d => d.row * cellSize)
+      .attr("width", cellSize - 4) // -4 for leaving a little space
+      .attr("height", cellSize - 4)
+      .attr("fill", d => colorScale(d.count))
+      .attr("rx", 10) // Rounded corners
+      .attr("stroke", "#fff")
+      .attr("stroke-width", 3);
+  
+    // Draw numbers and times
+    svg.selectAll(".heat-text")
+      .data(data)
+      .enter()
+      .append("text")
+      .attr("class", "heat-text")
+      .attr("x", d => d.col * cellSize + cellSize / 2)
+      .attr("y", d => d.row * cellSize + cellSize / 2 - 10)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .text(d => d.num)
+      .style("fill", d => d.count > maxVal * 0.6 ? "#fff" : "#000") // White text on dark background
+      .style("font-size", "28px")
+      .style("font-weight", "bold");
+  
+    svg.selectAll(".heat-count")
+      .data(data)
+      .enter()
+      .append("text")
+      .attr("class", "heat-count")
+      .attr("x", d => d.col * cellSize + cellSize / 2)
+      .attr("y", d => d.row * cellSize + cellSize / 2 + 15)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .text(d => `${d.count}x`)
+      .style("fill", d => d.count > maxVal * 0.6 ? "#fff" : "#333")
+      .style("font-size", "16px");
+  
+    // 3. title of the heatmap
+    let extraLabel = includeExtraNumber ? " (With Extra Number)" : " (Main Number Only)";
+    svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", -15)
+        .attr("text-anchor", "middle")
+        .style("font-size", "18px")
+        .style("font-weight", "bold")
+        .text(`Number Distribution Heatmap - ${targetDay}${extraLabel}`);
 }
