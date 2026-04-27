@@ -1103,7 +1103,7 @@ function renderTopPairs() {
         </div>
         <div class="pair-right">
           <div class="pair-count">${p.cnt}</div>
-          <div class="pair-text">times</div>
+          <span class="pair-text">times</span>
         </div>
       `;
       container.appendChild(el);
