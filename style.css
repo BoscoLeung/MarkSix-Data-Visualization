@@ -724,15 +724,18 @@ body, html {
     font-weight: bold;
 }
 .pair-right {
+    display: flex;
     text-align: right;
+    align-items: baseline;
+    gap: 6px;
 }
-.cnt {
+.pair-count {
     font-size: 28px;
     font-weight: bold;
-    color: #9933cc;
+    color: #2200ff;
 }
-.label {
-    font-size: 13px;
+.pair-text {
+    font-size: 20px;
     color: #666;
 }
 
