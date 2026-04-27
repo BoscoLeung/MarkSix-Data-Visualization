@@ -624,6 +624,15 @@ navBtns.forEach((btn, idx) => {
         
             startCooccurPage();
         }
+        else if (pageIds[idx] === "page-random") {
+            rightPanel.style.display = "none";
+            rightPanel.style.backgroundColor = "#e6f0ff";
+            panelStats.style.display = "none"; 
+            panelFreq.style.display = "none";
+            panelCooccur.style.display = "none";
+        
+            startRandomnessPage();
+        }
         else {
             rightPanel.style.display = "none";
             rightPanel.classList.remove("active");
@@ -1101,7 +1110,7 @@ function renderTopPairs() {
     });
 }
 
-// To prevent the bug that showing wrong panel at first
+// To fixed the bug that page 1 showing wrong panel by default
 window.addEventListener('DOMContentLoaded', () => {
     // Find the currently active page
     const activeBtn = document.querySelector('.nav-btn.active');
@@ -1111,3 +1120,239 @@ window.addEventListener('DOMContentLoaded', () => {
         navBtns[idx].click();
     }
 });
+
+// ==============================
+// Page 5: Randomness
+// ==============================
+async function startRandomnessPage() {
+    // Load data
+    const data = await d3.csv("Mark_Six.csv");
+
+    // Count the number of times each number appears
+    const numCounts = {};
+    for (let n = 1; n <= 49; n++) numCounts[n] = 0;
+
+    // Calculate the sum of the 6 numbers in each period.
+    const sumList = [];
+
+    data.forEach(row => {
+        const nums = [
+            +row["Winning Number 1"],
+            +row["2"],
+            +row["3"],
+            +row["4"],
+            +row["5"],
+            +row["6"]
+        ].filter(x => !isNaN(x));
+
+        // Number of frequencies
+        nums.forEach(n => {
+            if (n >= 1 && n <= 49) numCounts[n]++;
+        });
+
+        // Total for each draw
+        if (nums.length === 6) {
+            const sum = nums.reduce((a, b) => a + b, 0);
+            sumList.push(sum);
+        }
+    });
+
+    // ========== Left Individual statistics ==========
+    const values = Object.values(numCounts);
+    const avg = d3.mean(values);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const variance = d3.variance(values);
+    const randomness = variance < 30 ? "✅ Approx Uniform" : "❌ Not Uniform";
+
+    document.getElementById("avg-count").innerText = avg.toFixed(1);
+    document.getElementById("min-count").innerText = min;
+    document.getElementById("max-count").innerText = max;
+    document.getElementById("variance").innerText = variance.toFixed(2);
+    document.getElementById("random-result").innerText = randomness;
+
+    // ========== Right Sum statistics ==========
+    const sumMean = d3.mean(sumList);
+    const sumMin = Math.min(...sumList);
+    const sumMax = Math.max(...sumList);
+    const sumStd = d3.deviation(sumList);
+    // Reasonable range of standard deviation, Determine whether it is close to the normal range
+    const normalCheck = sumStd > 25 && sumStd < 55 
+        ? "✅ Approx Normal" 
+        : "❌ Skewed";
+
+    document.getElementById("sum-mean").innerText = sumMean.toFixed(1);
+    document.getElementById("sum-min").innerText = sumMin;
+    document.getElementById("sum-max").innerText = sumMax;
+    document.getElementById("sum-std").innerText = sumStd.toFixed(2);
+    document.getElementById("normal-result").innerText = normalCheck;
+
+    // Draw the Chart
+    drawIndividualChart(numCounts);
+    drawSumChart(sumList);
+}
+
+// Left: Number of occurrences of numbers 1-49
+function drawIndividualChart(counts) {
+    const container = d3.select("#chart-individual");
+    container.html("");
+
+    // Floating tooltip
+    const tooltip = d3.select("body").append("div")
+        .attr("id", "chart-tooltip")
+        .style("position", "absolute")
+        .style("background", "rgba(0,0,0,0.8)")
+        .style("color", "#fff")
+        .style("padding", "8px 12px")
+        .style("border-radius", "6px")
+        .style("pointer-events", "none")
+        .style("font-size", "14px")
+        .style("z-index", 1000)
+        .style("display", "none");
+        
+    const margin = { top:20, right:0, bottom:50, left:25 };
+    const w = 800;
+    const h = 450;
+
+    const svg = container.append("svg")
+        .attr("width", w)
+        .attr("height", h);
+
+    const g = svg.append("g")
+        .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+    const innerW = w - margin.left - margin.right;
+    const innerH = h - margin.top - margin.bottom;
+
+    const data = [];
+    for (let n=1; n<=49; n++) {
+        data.push({ num:n, count:counts[n] });
+    }
+
+    const x = d3.scaleBand()
+        .domain(data.map(d => d.num))
+        .range([0, innerW])
+        .padding(0.2);
+
+    const y = d3.scaleLinear()
+        .domain([0, d3.max(data, d=>d.count) + 5])
+        .range([innerH, 0]);
+
+    // bar with hover effect
+    g.selectAll("rect")
+        .data(data)
+        .enter()
+        .append("rect")
+        .attr("x", d => x(d.num))
+        .attr("y", d => y(d.count))
+        .attr("width", x.bandwidth())
+        .attr("height", d => innerH - y(d.count))
+        .attr("fill", "#4285F4")
+        .on("mouseover", function(event, d) {
+            d3.select(this).attr("fill", "#1976D2");
+            tooltip.style("display", "block")
+                .html(`Number: ${d.num}<br>Frequency: ${d.count}`)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mouseout", function() {
+            d3.select(this).attr("fill", "#4285F4");
+            tooltip.style("display", "none");
+        });
+
+    // mean line
+    const avg = d3.mean(data, d=>d.count);
+    g.append("line")
+        .attr("x1", 0)
+        .attr("x2", innerW)
+        .attr("y1", y(avg))
+        .attr("y2", y(avg))
+        .attr("stroke", "red")
+        .attr("stroke-width",2)
+        .attr("stroke-dasharray","4,4");
+
+    g.append("g")
+        .attr("transform", `translate(0,${innerH})`)
+        .call(d3.axisBottom(x))
+        .selectAll("text")
+        .attr("font-size",9);
+
+    g.append("g")
+        .call(d3.axisLeft(y));
+}
+
+// Left：Sum of 6 numbers
+function drawSumChart(sumList) {
+    const container = d3.select("#chart-sum");
+    container.html("");
+
+    // Floating tooltip
+    const tooltip = d3.select("body").append("div")
+        .attr("id", "chart-tooltip-sum")
+        .style("position", "absolute")
+        .style("background", "rgba(0,0,0,0.8)")
+        .style("color", "#fff")
+        .style("padding", "8px 12px")
+        .style("border-radius", "6px")
+        .style("pointer-events", "none")
+        .style("font-size", "14px")
+        .style("z-index", 1000)
+        .style("display", "none");
+
+
+    const margin = { top:20, right:20, bottom:50, left:60 };
+    const w = 700;
+    const h = 450;
+
+    const svg = container.append("svg")
+        .attr("width", w)
+        .attr("height", h);
+
+    const g = svg.append("g")
+        .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+    const innerW = w - margin.left - margin.right;
+    const innerH = h - margin.top - margin.bottom;
+
+    const x = d3.scaleLinear()
+        .domain([d3.min(sumList), d3.max(sumList)])
+        .range([0, innerW]);
+
+    const bins = d3.histogram()
+        .domain(x.domain())
+        .thresholds(20)
+        (sumList);
+
+    const y = d3.scaleLinear()
+        .domain([0, d3.max(bins, d=>d.length) + 2])
+        .range([innerH, 0]);
+
+    // bar with hover effect
+    g.selectAll("rect")
+        .data(bins)
+        .enter()
+        .append("rect")
+        .attr("x", d => x(d.x0))
+        .attr("y", d => y(d.length))
+        .attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 1))
+        .attr("height", d => innerH - y(d.length))
+        .attr("fill", "#ff6b6b")
+        .on("mouseover", function(event, d) {
+            d3.select(this).attr("fill", "#e53935");
+            tooltip.style("display", "block")
+                .html(`Sum: ${d.x0} - ${d.x1}<br>Count: ${d.length}`)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mouseout", function() {
+            d3.select(this).attr("fill", "#ff6b6b");
+            tooltip.style("display", "none");
+        });
+
+    g.append("g")
+        .attr("transform", `translate(0,${innerH})`)
+        .call(d3.axisBottom(x));
+
+    g.append("g")
+        .call(d3.axisLeft(y));
+}
