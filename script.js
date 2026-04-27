@@ -1277,7 +1277,7 @@ function drawIndividualChart(counts) {
         .style("z-index", 1000)
         .style("display", "none");
         
-    const margin = { top:20, right:0, bottom:50, left:25 };
+    const margin = { top:20, right:0, bottom:50, left:42 };
     const w = 800;
     const h = 450;
 
@@ -1346,6 +1346,22 @@ function drawIndividualChart(counts) {
 
     g.append("g")
         .call(d3.axisLeft(y));
+    
+    //  X & Y Axis Label
+    g.append("text")
+        .attr("x", innerW / 2 -20)
+        .attr("y", innerH + 40)
+        .style("text-anchor", "middle")
+        .style("font-size", "14px")
+        .text("Number");
+
+    g.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -margin.left + 10)
+        .attr("x", -innerH / 2)
+        .style("text-anchor", "middle")
+        .style("font-size", "14px")
+        .text("Frequency");
 }
 
 // Left：Sum of 6 numbers
@@ -1422,6 +1438,22 @@ function drawSumChart(sumList) {
 
     g.append("g")
         .call(d3.axisLeft(y));
+
+    // X & Y Axis Label
+    g.append("text")
+        .attr("x", innerW / 2 + 35)
+        .attr("y", innerH + 40)
+        .style("text-anchor", "middle")
+        .style("font-size", "14px")
+        .text("Sum of 6 Numbers");
+
+    g.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -margin.left + 25)
+        .attr("x", -innerH / 2)
+        .style("text-anchor", "middle")
+        .style("font-size", "14px")
+        .text("Count");
 }
 
 // ==============================
@@ -1672,7 +1704,24 @@ svg.selectAll("rect.main")
 
   svg.append("text")
   .attr("x", width / 2)
-  .attr("y", height + 45)
+  .attr("y", height + 40)
+  .attr("text-anchor", "middle")
+  .style("font-size", "14px")
+  .style("fill", "#333")
+  .text("Colour");
+
+  svg.append("text")
+  .attr("transform", "rotate(-90)")
+  .attr("y", 0 - margin.left + 15)
+  .attr("x", 0 - height / 2)
+  .attr("text-anchor", "middle")
+  .style("font-size", "14px")
+  .style("fill", "#333")
+  .text("Frequency");
+
+  svg.append("text")
+  .attr("x", width / 2)
+  .attr("y", 0)
   .attr("text-anchor", "middle")
   .style("font-size", "14px")
   .style("fill", "#444")
@@ -1681,7 +1730,7 @@ svg.selectAll("rect.main")
 
 }
 
-// Right panel: Lottery results table
+// Right panel: colour results table
 function drawColourDrawTable() {
     const wrap = d3.select("#colour-detail-table");
     wrap.html("");
