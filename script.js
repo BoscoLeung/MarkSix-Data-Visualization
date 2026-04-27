@@ -921,6 +921,7 @@ let cooccurMatrix = {};
 let cooccurSvg;
 let linksGroup;
 let nodesGroup;
+let activePair = null;
 
 async function startCooccurPage() {
     await buildCooccurrenceMatrix();
@@ -979,8 +980,8 @@ async function startCooccurPage() {
     drawCooccurrenceLinks(positions, threshold);
   });
 
-  // Initially display (threshold=28)
-  drawCooccurrenceLinks(positions, 28);
+  // Initially display (threshold=35)
+  drawCooccurrenceLinks(positions, 35);
 
   renderTopPairs();
 }
@@ -1070,7 +1071,11 @@ function drawCooccurrenceLinks(positions, threshold) {
       .attr("y2", d => positions[d.target].y)
       .style("stroke-width", d => widthScale(d.count))
       .style("stroke", d => colorScale(d.count))
-      .style("stroke-opacity", 0.8);
+      .style("stroke-opacity", 0.8)
+
+      // Save the original style for restoration.
+      .attr("data-original-width", d => widthScale(d.count))
+      .attr("data-original-color", d => colorScale(d.count));
 }
 
 function renderTopPairs() {
@@ -1093,23 +1098,65 @@ function renderTopPairs() {
     container.innerHTML = "";
   
     topPairs.forEach(p => {
-      const el = document.createElement("div");
-      el.className = "pair-card";
-      el.innerHTML = `
-        <div class="pair-left">
-          <div class="pair-ball purple">${p.a}</div>
-          <span class="pair-arrow">↔</span>
-          <div class="pair-ball blue">${p.b}</div>
-        </div>
-        <div class="pair-right">
-          <div class="pair-count">${p.cnt}</div>
-          <span class="pair-text">times</span>
-        </div>
-      `;
+        const el = document.createElement("div");
+        el.className = "pair-card";
+
+        el.onclick = () => {
+            if (activePair?.a === p.a && activePair?.b === p.b) {
+              activePair = null;
+              clearAllHighlight();
+            } else {
+              activePair = { a: p.a, b: p.b };
+              highlightConnection(p.a, p.b);
+            }
+        };
+
+        el.innerHTML = `
+            <div class="pair-left">
+                <div class="pair-ball purple">${p.a}</div>
+                <span class="pair-arrow">↔</span>
+                <div class="pair-ball blue">${p.b}</div>
+            </div>
+            <div class="pair-right">
+                <div class="pair-count">${p.cnt}</div>
+                <span class="pair-text">times</span>
+            </div>
+        `;
       container.appendChild(el);
     });
 }
 
+// Highlight Co-occurrence connection 
+function highlightConnection(a, b) {
+    clearAllHighlight();
+  
+    d3.selectAll("line.cooccur-link").each(function (d) {
+      if (
+        (d.source === a && d.target === b) ||
+        (d.source === b && d.target === a)
+      ) {
+        d3.select(this)
+          .style("stroke", "#ffcc00")
+          .style("stroke-width", 10)
+          .style("stroke-opacity", 1)
+          .raise(); //Dropping this line to the "top layer" to avoid blocking.
+      }
+    });
+  }
+  
+  function clearAllHighlight() {
+    d3.selectAll("line.cooccur-link").each(function () {
+      const originalColor = d3.select(this).attr("data-original-color");
+      const originalWidth = d3.select(this).attr("data-original-width");
+  
+      d3.select(this)
+        .style("stroke", originalColor)
+        .style("stroke-width", originalWidth)
+        .style("stroke-opacity", 0.8);
+    });
+  }
+
+  
 // To fixed the bug that page 1 showing wrong panel by default
 window.addEventListener('DOMContentLoaded', () => {
     // Find the currently active page
@@ -1157,7 +1204,7 @@ async function startRandomnessPage() {
         }
     });
 
-    // ========== Left Individual statistics ==========
+    // Left Individual statistics
     const values = Object.values(numCounts);
     const avg = d3.mean(values);
     const min = Math.min(...values);
@@ -1171,7 +1218,7 @@ async function startRandomnessPage() {
     document.getElementById("variance").innerText = variance.toFixed(2);
     document.getElementById("random-result").innerText = randomness;
 
-    // ========== Right Sum statistics ==========
+    // Right Sum statistics
     const sumMean = d3.mean(sumList);
     const sumMin = Math.min(...sumList);
     const sumMax = Math.max(...sumList);
