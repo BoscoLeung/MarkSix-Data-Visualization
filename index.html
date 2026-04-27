@@ -189,6 +189,8 @@
             <!-- Page 7 : Distribution -->
             <div class="page" id="page-distribution">
                 <h1 style="color:#990000;">Does the distribution of numbers exhibit significant differences based on the day of draw?</h1>
+
+                <div id="weekday-heatmap" style="width:900px; height:500px; margin:0 auto;"></div>
             </div>
         
             <!-- Page 8 : Prize Money -->
@@ -291,6 +293,35 @@
                 <div id="colour-detail-table" class="colour-detail-table"></div>
             </div>
 
+            <!-- Mode 7: Distribution Panel -->
+            <div id="panel-distribution" class="panel-content" style="display:none; padding:24px;">
+                <h2 style="color:#990000; margin-bottom:20px;">Weekday Settings</h2>
+                
+                <!-- Extra Number Toggle Button -->
+                <div class="extra-toggle-group">
+                    <button class="extra-btn active" id="btn-main-only">Main Only</button>
+                    <button class="extra-btn" id="btn-include-extra">Include Extra</button>
+                </div>
+
+                <!-- Weekday Control Buttons -->
+                <div class="weekday-button-group">
+                    <button id="btn-all" class="weekday-btn active">All</button>
+                    <button id="btn-mon" class="weekday-btn">Monday</button>
+                    <button id="btn-tue" class="weekday-btn">Tuesday</button>
+                    <button id="btn-wed" class="weekday-btn">Wednesday</button>
+                    <button id="btn-thu" class="weekday-btn">Thursday</button>
+                    <button id="btn-fri" class="weekday-btn">Friday</button>
+                    <button id="btn-sat" class="weekday-btn">Saturday</button>
+                    <button id="btn-sun" class="weekday-btn">Sunday</button>
+                </div>
+
+                <!-- Background Info -->
+                <div class="weekday-info-box">
+                    <strong>Background Information<br><br></strong>
+                    Mark Six draws are <strong>regularly held on Tuesday, Thursday, and Saturday</strong> .<br><br>
+                    Draws on other days (Monday, Wednesday, Friday, Sunday) are rare, <br>only held on public holidays or special occasions.
+                </div>
+            </div>
         </div>
     </div>
 
