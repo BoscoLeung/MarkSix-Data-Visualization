@@ -980,8 +980,8 @@ async function startCooccurPage() {
     drawCooccurrenceLinks(positions, threshold);
   });
 
-  // Initially display (threshold=35)
-  drawCooccurrenceLinks(positions, 35);
+  // Initially display (threshold=47)
+  drawCooccurrenceLinks(positions, 47);
 
   renderTopPairs();
 }
