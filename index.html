@@ -172,6 +172,18 @@
             <!-- Page 6 : Colour Chart -->
             <div class="page" id="page-colour">
                 <h1 style="color:#990000;">Which colour of number balls appears most frequently?</h1>
+
+                <!-- Top right corner switch -->
+                <div class="colour-controls">
+                    <label>
+                        <input type="checkbox" id="includeExtra"> Include Extra Number
+                    </label>
+                </div>
+
+                <!-- Left side: Long bar chart -->
+                <div class="colour-chart-wrapper">
+                    <div id="colour-summary-chart"></div>
+                </div>
             </div>
         
             <!-- Page 7 : Distribution -->
@@ -191,7 +203,7 @@
 
         </div>
 
-        <!-- Statistical Information Area -->
+        <!-- Right Panel Area -->
         <div class="sidebar-right">
 
             <!-- Mode 1: Statistics panel used for Pick Numbers -->
@@ -263,10 +275,20 @@
             <!-- Mode 3: Hot & Cold Page Dont need Panel -->
 
             <!-- Mode 4: Frequency Page Dedicated Button Panel -->
-            <div id="panel-cooccur" style="display:none;">            
-                <div class = "pair-instruction">Click each pair card to highlight the corresponding connection line</div>
-                <h3>Top Number Pairs</h3>
-                <div id="top-pairs-container"></div>
+            <div id="panel-cooccur" class="panel-content" style="display:none;">   
+                <div style="padding:20px;">    
+                    <div class = "pair-instruction">Click each pair card to highlight the corresponding connection line</div>
+                    <h3>Top Number Pairs</h3>
+                    <div id="top-pairs-container"></div>
+                </div>
+            </div>
+
+            <!-- Mode 5: Randomness page Dont need Panel -->
+
+            <!-- Mode 6: Colour Chart Panel -->
+            <div id="panel-colour" class="panel-content" style="display:none;">
+                <h3>All the Draws (Colour Breakdown)</h3>
+                <div id="colour-detail-table" class="colour-detail-table"></div>
             </div>
 
         </div>
