@@ -125,8 +125,43 @@
             </div>
         
             <!-- Page 5 : Randomness -->
-            <div class="page" id="page-random">
+            <div class="page" id="page-random" style="max-width:100%; width:1600px; margin:0 auto;">
                 <h1 style="color:#990000;">Does the distribution of numbers approximate uniform randomness?</h1>
+
+                <div style="display:flex; gap:20px; margin-top:20px;">
+                    <!-- Left：Individual Number Frequency Histogram -->
+                    <div style="flex:1;">
+                        <h3>Individual Number Frequency</h3>
+                        <div id="chart-individual" style="width:700px; height:500px;"></div>
+                    </div>
+            
+                    <!-- Right：Sum of Numbers Histogram -->
+                    <div style="flex:1;">
+                        <h3>Sum of 6 Numbers per Draw</h3>
+                        <div id="chart-sum" style="width:700px; height:500px;"></div>
+                    </div>
+                </div>
+            
+                <!-- Statistical cards -->
+                <div style="margin-top:30px; display:flex; gap:15px; flex-wrap:wrap;">
+                    <!-- Left side: Individual statistics -->
+                    <div style="flex:1; display:flex; gap:15px; flex-wrap:wrap; justify-content:center;">
+                        <div class="stat-card-left"><b>Average Count:</b> <span id="avg-count">-</span></div>
+                        <div class="stat-card-left"><b>Min Count:</b> <span id="min-count">-</span></div>
+                        <div class="stat-card-left"><b>Max Count:</b> <span id="max-count">-</span></div>
+                        <div class="stat-card-left"><b>Variance:</b> <span id="variance">-</span></div>
+                        <div class="stat-card-left"><b>Uniform Check:</b> <span id="random-result">-</span></div>
+                    </div>
+
+                    <!-- Right side: Sum of number statistics -->
+                    <div style="flex:1; display:flex; gap:15px; flex-wrap:wrap; justify-content:center;">
+                        <div class="stat-card-right"><b>Mean Sum:</b> <span id="sum-mean">-</span></div>
+                        <div class="stat-card-right"><b>Min Sum:</b> <span id="sum-min">-</span></div>
+                        <div class="stat-card-right"><b>Max Sum:</b> <span id="sum-max">-</span></div>
+                        <div class="stat-card-right"><b>Std Dev:</b> <span id="sum-std">-</span></div>
+                        <div class="stat-card-right"><b>Normal Check:</b> <span id="normal-result">-</span></div>
+                    </div>
+                </div>
             </div>
         
             <!-- Page 6 : Colour Chart -->
