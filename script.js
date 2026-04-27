@@ -1056,19 +1056,27 @@ function drawCooccurrenceLinks(positions, threshold) {
       .range(["#2c3e80", "#b0b8e8"]);
   
     // Update lines
-    const linkSelection = linksGroup.selectAll("line.cooccur-link")
+    const linkSelection = linksGroup.selectAll("path.cooccur-link")
       .data(links, d => `${d.source}-${d.target}`);
   
     linkSelection.exit().remove();
   
     linkSelection.enter()
-      .append("line")
+      .append("path")
       .attr("class", "cooccur-link")
       .merge(linkSelection)
-      .attr("x1", d => positions[d.source].x)
-      .attr("y1", d => positions[d.source].y)
-      .attr("x2", d => positions[d.target].x)
-      .attr("y2", d => positions[d.target].y)
+      .attr("d", d => {
+        const sx = positions[d.source].x;
+        const sy = positions[d.source].y;
+        const tx = positions[d.target].x;
+        const ty = positions[d.target].y;
+  
+        // Bézier curves for circular layouts
+        const mx = (sx + tx) / 4;  
+        const my = (sy + ty) / 4;
+        return `M ${sx} ${sy} Q ${mx} ${my} ${tx} ${ty}`;
+      })
+      .style("fill", "none")
       .style("stroke-width", d => widthScale(d.count))
       .style("stroke", d => colorScale(d.count))
       .style("stroke-opacity", 0.8)
@@ -1130,7 +1138,7 @@ function renderTopPairs() {
 function highlightConnection(a, b) {
     clearAllHighlight();
   
-    d3.selectAll("line.cooccur-link").each(function (d) {
+    d3.selectAll("path.cooccur-link").each(function (d) {
       if (
         (d.source === a && d.target === b) ||
         (d.source === b && d.target === a)
@@ -1145,7 +1153,7 @@ function highlightConnection(a, b) {
   }
   
   function clearAllHighlight() {
-    d3.selectAll("line.cooccur-link").each(function () {
+    d3.selectAll("path.cooccur-link").each(function () {
       const originalColor = d3.select(this).attr("data-original-color");
       const originalWidth = d3.select(this).attr("data-original-width");
   
