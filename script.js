@@ -1099,4 +1099,15 @@ function renderTopPairs() {
       `;
       container.appendChild(el);
     });
-  }
+}
+
+// To prevent the bug that showing wrong panel at first
+window.addEventListener('DOMContentLoaded', () => {
+    // Find the currently active page
+    const activeBtn = document.querySelector('.nav-btn.active');
+    if (activeBtn) {
+        const idx = Array.from(navBtns).indexOf(activeBtn);
+        // Manually trigger a click event to initialize the panel.
+        navBtns[idx].click();
+    }
+});
