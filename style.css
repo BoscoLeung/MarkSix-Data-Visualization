@@ -532,6 +532,20 @@ body, html {
     width: 70px;
     height: 70px;
 }
+.page2-freq-tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 10px;
+    pointer-events: none;
+    font-size: 14px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 9999;
+    white-space: nowrap;
+}
 
 /* Page 3 Hot & Cold Page */
 .hc-container {
