@@ -707,6 +707,8 @@ function resetAllBalls() {
 // ==============================
 let freqData = {};
 let freqPositionData = [];
+let excludeExtra = false; 
+let currentFreqMode = "sort";
 
 // Fixed layout parameters
 const freqRows = 7;
@@ -770,7 +772,7 @@ function generateFreqDivBalls() {
     this.prepend(svg);
   });
 
-  // ========== 跟 Page1 一模一样的 hover ==========
+  // Ball hover function
   balls.on("mouseenter", function(e, d) {
     const text = d3.select(this).select(".num-text");
     if (!d3.select(this).classed("selected")) {
@@ -806,21 +808,30 @@ async function loadFrequencyData() {
   freqData = {};
 
   data.forEach(draw => {
-    const allNumbers = [
+    const mainNumbers = [
       +draw['Winning Number 1'],
       +draw['2'],
       +draw['3'],
       +draw['4'],
       +draw['5'],
-      +draw['6'],
-      +draw['Extra Number']
+      +draw['6']
     ];
 
-    allNumbers.forEach(n => {
+    const extraNum = +draw['Extra Number'];
+
+    // First, count the winning numbers (forever).
+    mainNumbers.forEach(n => {
       if (n >= 1 && n <= 49) { 
-      freqData[n] = (freqData[n] || 0) + 1;
+        freqData[n] = (freqData[n] || 0) + 1;
       }
     });
+
+    // Only add extra number if "not excluding extra".
+    if(!excludeExtra){
+      if (extraNum >= 1 && extraNum <= 49) {
+        freqData[extraNum] = (freqData[extraNum] || 0) + 1;
+      }
+    }
   });
 }
 
@@ -831,7 +842,34 @@ async function startFrequencyPage() {
   await loadFrequencyData();
 
   sortByFreq();
+  setFreqButtonActive("sort");
 }
+
+// Exclude Extra function
+const btnExExtra = document.getElementById("btnExcludeExtra");
+const statusLabel = document.getElementById("freqStatusLabel");
+
+btnExExtra.onclick = async function(){
+  excludeExtra = !excludeExtra;
+
+  if(excludeExtra){
+    this.textContent = "Include Extra Number";
+    this.style.background = "#0066aa";
+    
+    statusLabel.textContent = "Current status: Excludes Extra numbers";
+    statusLabel.className = "freq-status-label status-exclude";
+  }else{
+    this.textContent = "Exclude Extra Number";
+    this.style.background = "#990000";
+    
+    statusLabel.textContent = "Current status: Includes Extra numbers";
+    statusLabel.className = "freq-status-label status-include";
+  }
+
+  await loadFrequencyData();
+  sortByFreq();
+  setFreqButtonActive("sort");
+};
 
 // Sort By Frequency function
 function sortByFreq() {
@@ -906,10 +944,31 @@ function resetFreqBalls() {
     });
 }
 
-// Button binding
-document.getElementById("btnSortFreq").onclick = sortByFreq;
-document.getElementById("btnSizeFreq").onclick = sizeByFreq;
-document.getElementById("btnResetFreq").onclick = resetFreqBalls;
+function setFreqButtonActive(mode) {
+  d3.selectAll(".freq-btn").classed("active-dark", false);
+  currentFreqMode = mode;
+
+  if(mode === "sort"){
+      d3.select("#btnSortFreq").classed("active-dark", true);
+  }else if(mode === "size"){
+      d3.select("#btnSizeFreq").classed("active-dark", true);
+  }else if(mode === "reset"){
+      d3.select("#btnResetFreq").classed("active-dark", true);
+  }
+}
+
+document.getElementById("btnSortFreq").onclick = function() {
+  sortByFreq();
+  setFreqButtonActive("sort");
+};
+document.getElementById("btnSizeFreq").onclick = function() {
+  sizeByFreq();
+  setFreqButtonActive("size");
+};
+document.getElementById("btnResetFreq").onclick = function() {
+  resetFreqBalls();
+  setFreqButtonActive("reset");
+};
 
 // ==============================
 // Page 3: Hot & Cold
