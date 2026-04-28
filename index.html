@@ -79,6 +79,9 @@
 
                 <div id="freq-ball-wrap"></div>
 
+                <div id="freqStatusLabel" class="freq-status-label status-include">
+                    Current status: Includes Extra Number
+                </div>
                 <div class="text-container-bottom">
                   <p style="color: #b30000; font-size: 16px;">六合彩慈善有餘</p>
                   <p style="color: #b30000; font-size: 16px; font-family: 'segoe script'; margin-left: 2em">Mark Six, there are more in charity</p>
@@ -202,7 +205,7 @@
                     <button id="filterZeroBtn" class="chart-btn">Hide 0 Jackpot</button>
                 </div>
 
-                <div id="prize-scatter-chart" style="width:1000px; height:550px; margin-top:100px;"></div>
+                <div id="prize-scatter-chart" style="width:1000px; height:550px; margin-top:30px; margin-right:30px;"></div>
 
                 <div class="page5-data-note">
                     Note: All data visualisations on this page only analyse the six main winning numbers. The extra special number is not included.
@@ -278,7 +281,8 @@
             <div id="panel-frequency" class="panel-content" style="display:none;">
                 <div style="padding:30px;">
                     <h1 style="color:#990000;">Which numbers appear most frequently over time?</h1>
-                    <h2 style="color:#6a0000;">Click the buttons below to view effects</h2>
+                    <h2 style="color:#6a0000; margin-top: 50px; margin-bottom: 30px;">Click the buttons below to view effects</h2>
+                    <button id="btnExcludeExtra" class="freq-btn">Exclude Extra Number</button>
                     <button id="btnSortFreq" class="freq-btn">Sort By Frequency</button>
                     <button id="btnSizeFreq" class="freq-btn">Size By Frequency</button>
                     <button id="btnResetFreq" class="freq-btn">Reset Balls</button>
