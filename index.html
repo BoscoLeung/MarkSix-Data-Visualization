@@ -295,11 +295,17 @@
 
             <!-- Mode 3: Hot & Cold Page Dont need Panel -->
 
-            <!-- Mode 4: Frequency Page Dedicated Button Panel -->
+            <!-- Mode 4: Co-occurrence Page Button Panel -->
             <div id="panel-cooccur" class="panel-content" style="display:none;">   
                 <div style="padding:20px;">    
                     <div class = "pair-instruction">Click each pair card to highlight the corresponding connection line</div>
-                    <h3>Top Number Pairs</h3>
+                    <div class="top-pairs-header">
+                        <h3>Top Number Pairs</h3> 
+                        <label> <input type="checkbox" id="includeExtraPage4" checked>
+                            Include Extra Number 
+                        </label>
+                    </div>
+
                     <div id="top-pairs-container"></div>
                 </div>
             </div>
@@ -341,6 +347,11 @@
                     Draws on other days (Monday, Wednesday, Friday, Sunday) are rare, <br>only held on public holidays or special occasions.
                 </div>
             </div>
+
+            <!-- Mode 8: Prize Money page Dont need Panel -->
+
+            <!-- Mode 8: Future Trend page Dont need Panel -->
+
         </div>
     </div>
 
