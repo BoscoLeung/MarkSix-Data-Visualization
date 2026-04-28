@@ -1110,9 +1110,29 @@ let cooccurSvg;
 let linksGroup;
 let nodesGroup;
 let activePair = null;
+let includeExtraPage4 = true;
+
+// Bind checkbox switch
+document.addEventListener('DOMContentLoaded', () => {
+  const check = document.getElementById('includeExtraPage4');
+  check.checked = true;
+
+  check.addEventListener('change', async () => {
+    includeExtraPage4 = check.checked;
+    d3.select("#thresholdSlider").property("value", 47);
+  
+    const svg = d3.select("#cooccur-svg-container svg");
+    svg.style("opacity", 0);
+  
+    setTimeout(async () => {
+      await startCooccurPage();
+      svg.style("opacity", 1);
+    }, 250);
+  });
+});
 
 async function startCooccurPage() {
-    await buildCooccurrenceMatrix();
+  await buildCooccurrenceMatrix();
 
   // Create an SVG canvas
   const width = 800;
@@ -1189,15 +1209,23 @@ async function buildCooccurrenceMatrix() {
 
   // Count the co-occurrences of each group of numbers
   data.forEach(d => {
-    const nums = [
+    const mainNumbers = [
       +d["Winning Number 1"], 
       +d["2"], 
       +d["3"], 
       +d["4"], 
       +d["5"], 
-      +d["6"], 
-      +d["Extra Number"]
+      +d["6"]
     ].filter(n => !isNaN(n));
+    
+    const extraNum = +d["Extra Number"];
+
+    let nums = [...mainNumbers];
+    
+    // Add extra number if checked.
+    if (includeExtraPage4 && !isNaN(extraNum)) {
+      nums.push(extraNum);
+    }
 
     // Pairwise pairing statistics
     for (let i = 0; i < nums.length; i++) {
@@ -1292,19 +1320,22 @@ function renderTopPairs() {
 
   const container = document.getElementById("top-pairs-container");
   container.innerHTML = "";
+  container.style.opacity = "0";
 
-  topPairs.forEach(p => {
+  topPairs.forEach((p, index) => {
       const el = document.createElement("div");
       el.className = "pair-card";
+      el.style.opacity = "0"; 
+      el.style.transform = "translateY(6px)";
 
       el.onclick = () => {
-          if (activePair?.a === p.a && activePair?.b === p.b) {
-            activePair = null;
-            clearAllHighlight();
-          } else {
-            activePair = { a: p.a, b: p.b };
-            highlightConnection(p.a, p.b);
-          }
+        if (activePair?.a === p.a && activePair?.b === p.b) {
+          activePair = null;
+          clearAllHighlight();
+        } else {
+          activePair = { a: p.a, b: p.b };
+          highlightConnection(p.a, p.b);
+        }
       };
 
       el.innerHTML = `
@@ -1319,7 +1350,17 @@ function renderTopPairs() {
           </div>
       `;
     container.appendChild(el);
+
+    setTimeout(() => {
+      el.style.opacity = "1";
+      el.style.transform = "translateY(0)";
+    }, index * 40);
   });
+
+  // Fade in
+  setTimeout(() => {
+    container.style.opacity = "1";
+  }, 100);
 }
 
 // Highlight Co-occurrence connection 
@@ -1351,18 +1392,6 @@ function clearAllHighlight() {
       .style("stroke-opacity", 0.8);
   });
 }
-
-  
-// To fixed the bug that page 1 showing wrong panel by default
-window.addEventListener('DOMContentLoaded', () => {
-  // Find the currently active page
-  const activeBtn = document.querySelector('.nav-btn.active');
-  if (activeBtn) {
-      const idx = Array.from(navBtns).indexOf(activeBtn);
-      // Manually trigger a click event to initialize the panel.
-      navBtns[idx].click();
-  }
-});
 
 // ==============================
 // Page 5: Randomness
