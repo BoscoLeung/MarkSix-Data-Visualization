@@ -276,6 +276,9 @@ function countComboAppearance(combo) {
     });
   });
 }
+window.onload = function() {
+  document.querySelector('.nav-btn.active').click();
+}
 
 // Statistical Area Update 
 async function updateAllStats() {
@@ -600,6 +603,7 @@ modalOverlay.addEventListener("click", (e) => {
 // Automatically pop-up Welcome message when entering website
 window.addEventListener('load', function() {
   welcomeOverlay.style.display = "flex";
+  updateAllStats(); 
 });
 
 // ========== Left navigation buttons + page switching ==========
