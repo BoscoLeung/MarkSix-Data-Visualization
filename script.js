@@ -737,13 +737,40 @@ function generateFreqDivBalls() {
   wrap.selectAll(".num-ball").remove();
   generateFreqPositionData();
 
+  // tooltip
+  const tooltip = d3.select("body").append("div")
+    .attr("class", "page2-freq-tooltip");
+
   const balls = wrap.selectAll(".num-ball")
     .data(freqPositionData, d => d.n)
     .enter()
     .append("div")
     .attr("class", "num-ball")
     .style("left", d => d.x + "px")
-    .style("top", d => d.y + "px");
+    .style("top", d => d.y + "px")
+
+    // Hover function
+    .on("mouseover", function(e, d) {
+      // Show tooltip
+      tooltip
+        .style("opacity", 1)
+        .html(`
+          Number：${d.n}<br/>
+          Number of occurrences：${freqData[d.n] || 0} times
+        `)
+        .style("left", (e.pageX + 10) + "px")
+        .style("top", (e.pageY - 40) + "px");
+    })
+    .on("mousemove", function(e) {
+      // Follow the mouse
+      tooltip
+        .style("left", (e.pageX + 10) + "px")
+        .style("top", (e.pageY - 40) + "px");
+    })
+    .on("mouseout", function() {
+      // Hide tooltip
+      tooltip.style("opacity", 0);
+    });
 
   balls.append("div")
     .attr("class", "ball-img")
