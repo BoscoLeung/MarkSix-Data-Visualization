@@ -930,3 +930,87 @@ body, html {
 .extra-btn.active:hover {
     background-color: #b30000;
 }
+
+/* Page 8 chart*/
+#prize-chart-container {
+    position: relative;
+  }
+.chart-dot {
+  fill: #990000;
+  stroke: #fff;
+  stroke-width: 1px;
+  opacity: 0.5;
+}
+.chart-dot:hover {
+    opacity: 1;
+    filter: drop-shadow(0 0 6px #990000) drop-shadow(0 0 12px #cc0000);
+}
+.chart-line-path {
+    fill: none;
+    stroke: #990000;
+    stroke-width: 3.5px;
+}
+.chart-line-point {
+    fill: #990000;
+    stroke: #fff;
+    stroke-width: 2.5px;
+}
+.chart-line-point:hover {
+    filter: drop-shadow(0 0 6px #990000) drop-shadow(0 0 12px #cc0000);
+}
+.vertical-average-line {
+    stroke: #000;
+    stroke-width: 2px;
+    stroke-dasharray: 5,5;
+    opacity: 0.8;
+}
+.average-line-label {
+    font-size: 14px;
+    font-weight: bold;
+    fill: #000;
+    text-anchor: middle;
+}
+#chart-button-group {
+    text-align: center;
+    margin-bottom: 10px;
+    padding: 10px 22px;
+}
+.chart-btn {
+    padding: 10px 22px;
+    border: none;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    margin: 0 6px 10px 0;
+    width: auto !important;
+    display: inline-block;
+}
+.chart-prize-tooltip {
+    position: fixed !important; 
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 10px;
+    pointer-events: none;
+    font-size: 14px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 999;
+}
+#toggleChartBtn {
+    background: #990000;
+    color: white;
+}
+#toggleChartBtn:hover {
+    background: #cc0000;
+}
+#filterZeroBtn {
+    background: #0066aa;
+    color: white;
+}
+#filterZeroBtn:hover {
+    background: #0088dd;
+}
