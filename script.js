@@ -511,26 +511,6 @@ async function renderCompanionChart(selectedList) {
     .text("Co-occurrence Count");
 }
 
-// Pop-up control
-const modalOverlay = document.getElementById("modalOverlay");
-const infoBtn = document.getElementById("infoBtn");
-const closeModal = document.getElementById("closeModal");
-
-infoBtn.addEventListener("click", () => {
-  modalOverlay.style.display = "flex";
-});
-
-closeModal.addEventListener("click", () => {
-  modalOverlay.style.display = "none";
-});
-
-// Can also turn it off by clicking the background.
-modalOverlay.addEventListener("click", (e) => {
-  if (e.target === modalOverlay) {
-    modalOverlay.style.display = "none";
-  }
-});
-
 const resetBtn = document.getElementById("resetBtn");
 resetBtn.addEventListener("click", async () => {
   // Clear selected numbers
@@ -558,6 +538,68 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
   link.href = fileUrl;
   link.download = fileName;
   link.click();
+});
+
+// Welcome Pop-up control
+const welcomeOverlay = document.getElementById("welcomeOverlay");
+const closeWelcome = document.getElementById("closeWelcome");
+const startExploreBtn = document.getElementById("startExploreBtn");
+const openMoreDetails = document.getElementById("openMoreDetails");
+
+// More Detail Pop-up control
+const modalOverlay = document.getElementById("modalOverlay");
+const closeModal = document.getElementById("closeModal");
+const infoBtn = document.getElementById("infoBtn");
+const welcomeBtn = document.getElementById("welcomeBtn");
+
+function openWelcomePopup() {
+  welcomeOverlay.style.display = "flex";
+}
+function closeWelcomePopup() {
+  welcomeOverlay.style.display = "none";
+}
+
+function openDetailPopup() {
+  modalOverlay.style.display = "flex";
+}
+function closeDetailPopup() {
+  modalOverlay.style.display = "none";
+}
+
+// Welcome pop-up button
+closeWelcome.addEventListener("click", closeWelcomePopup);
+startExploreBtn.addEventListener("click", closeWelcomePopup);
+welcomeBtn.addEventListener("click", openWelcomePopup);
+
+// More Details pop-up button
+closeModal.addEventListener("click", closeDetailPopup);
+infoBtn.addEventListener("click", openDetailPopup);
+
+// More Details Link: Close Welcome and Open Details
+openMoreDetails.addEventListener("click", (e) => {
+  e.preventDefault();
+  closeWelcomePopup();
+  openDetailPopup();
+});
+
+//"Back to Welcome" button
+const backToWelcomeBtn = document.getElementById("backToWelcome");
+backToWelcomeBtn.addEventListener("click", () => {
+  closeDetailPopup();
+  openWelcomePopup();
+});
+
+// Can also click the background icon to close the pop-up
+welcomeOverlay.addEventListener("click", (e) => {
+  if (e.target === welcomeOverlay) closeWelcomePopup();
+});
+modalOverlay.addEventListener("click", (e) => {
+  if (e.target === modalOverlay) closeDetailPopup();
+});
+
+// Automatically pop-up Welcome message when entering website
+window.addEventListener('load', function() {
+  welcomeOverlay.style.display = "flex";
 });
 
 // ========== Left navigation buttons + page switching ==========
