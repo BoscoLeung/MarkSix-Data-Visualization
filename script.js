@@ -670,7 +670,7 @@ navBtns.forEach((btn, idx) => {
       rightPanel.classList.remove("active");
     
       resetAllBalls();
-      startPrizeScatter();
+      startPrizeChart();
     }
     else {
       rightPanel.style.display = "none";
@@ -1999,7 +1999,7 @@ let overallAverageFreqGlobal = 0;
 let hideZeroJackpot = false;
 
 // initialization
-async function initPrizeChart() {
+async function startPrizeChart() {
   const raw = await d3.csv("Mark_Six.csv");
   if (!Data || !Data.numberStats) return;
 
@@ -2253,5 +2253,3 @@ d3.select("#filterZeroBtn").on("click",()=>{
   );
   renderChart();
 });
-
-initPrizeChart();
