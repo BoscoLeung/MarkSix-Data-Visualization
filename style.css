@@ -728,8 +728,22 @@ body, html {
     color: #444;
     font-weight: 500;
 }
-
+#cooccur-svg-container svg {
+    transition: opacity 0.3s ease;
+}
 /* Page 4 Top Pairs Cards */
+.top-pairs-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 0;
+}
+.top-pairs-header h2 {
+    margin: 0;
+}
+#top-pairs-container {
+    transition: all 0.3s ease;
+}
 .pair-instruction {
     margin-bottom: 15px;
     padding: 8px 12px;
@@ -750,8 +764,10 @@ body, html {
     border-radius: 12px;
     padding: 12px 30px;
     margin-bottom: 10px;
-    transition: all 0.25s ease;
     cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 1;
+    transform: translateY(0);
 }
 .pair-card:hover {
     background: #f0e6ff;
