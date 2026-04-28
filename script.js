@@ -12,9 +12,13 @@ for (let i = 1; i <= 49; i++) {
   }
 }
 
+let totalDraws = 0;
+
 // Load CSV data
 d3.csv("Mark_Six.csv").then(data => {
-  let drawCount = data.length;
+  totalDraws = data.length;
+  document.getElementById("totalDraws").textContent = totalDraws;
+
   data.forEach(draw => {
     let mainNums = [
       +draw['Winning Number 1'],
@@ -330,7 +334,7 @@ async function updateAllStats() {
 function updateStatsCard(num) {
   const stats = Data.numberStats[num];
   d3.select("#appearances").text(stats.appearances);
-  d3.select("#frequency").text(((stats.appearances / 2522) * 100).toFixed(2) + "%");
+  d3.select("#frequency").text(((stats.appearances / totalDraws) * 100).toFixed(2) + "%");
   d3.select("#mainNumber").text(stats.mainNumber);
   d3.select("#lastSeen").text(stats.lastSeen);
 }
