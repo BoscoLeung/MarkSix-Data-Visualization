@@ -13,6 +13,7 @@
                 <img src="images/ball-1.svg" alt="logo" class="logo-icon">
                 <h1>Mark Six</h1>
                 <p>Visualization</p>
+                <button id="welcomeBtn" class="welcome-button">Welcome Message</button>
                 <button id="infoBtn" class="info-button">What is Mark Six?</button>
             </div>
 
@@ -344,7 +345,8 @@
                 <div class="weekday-info-box">
                     <strong>Background Information<br><br></strong>
                     Mark Six draws are <strong>regularly held on Tuesday, Thursday, and Saturday</strong> .<br><br>
-                    Draws on other days (Monday, Wednesday, Friday, Sunday) are rare, <br>only held on public holidays or special occasions.
+                    Draws on other days (Monday, Wednesday, Friday, Sunday) are rare, 
+                    <br>only held on public holidays or special occasions.
                 </div>
             </div>
 
@@ -355,19 +357,84 @@
         </div>
     </div>
 
-    <!-- Pop-up background and content -->
-    <div id="modalOverlay" class="modal-overlay">
+    <!-- Welcome Popup -->
+    <div id="welcomeOverlay" class="modal-overlay">
         <div class="modal-content">
-            <span class="close-btn" id="closeModal">&times;</span>
-            <h1>What is Mark Six?</h1>
+            <span class="close-btn" id="closeWelcome">&times;</span>
+            <h1 style="color:#990000;">Welcome</h1>
+            <p>
+                Welcome! This platform is built to help you explore Mark Six data through clear, interactive visualizations. 
+                Our goal is to make patterns easier to spot and insights easier to understand, whether you're here out of curiosity, 
+                research, or just to experiment with the numbers.
+            </p>
+            <br>
+    
+            <h2 style="color:#990000;">What is Mark Six?</h2>
             <p>
                 Mark Six is a popular lottery game in Hong Kong, organized by the Hong Kong Jockey Club. 
                 Players choose 6 numbers from 1 to 49, and a draw is held three times a week to determine the winning combination.
+                <a href="#" id="openMoreDetails" style="color:#990000; text-decoration: underline;"><br><br>More Details</a>
             </p>
             <br>
-            <h2>How It Works</h2>
+    
+            <h2 style="color:#990000;">What You Can Do Here</h2>
             <p>
-                Six main numbers and one extra number are drawn. The more matching numbers you have, the higher the prize tier.
+                We created a number-picker that lets you test how often specific number combinations have appeared in past draws. 
+                You'll also find a range of charts that <strong>visualize number frequency, the hottest and coldest numbers, 
+                co-occurance of the numbers, and other patterns.</strong>
+            </p>
+            <p>
+                Enjoy exploring the numbers — we hope this project gives you new insights and a fun way to interact with the data.
+            </p>
+            <br>
+    
+            <h3 style="color:#990000;">Disclaimer</h3>
+            <p style="font-size:13px;">
+                Our dataset only covers from 3 January 2008 to 3 March 2026, and the results shown on this platform are 
+                for informational and educational purposes. We do not guarantee accuracy, completeness, or future outcomes, 
+                and we do not take responsibility for any decisions made based on this data.
+            </p>
+            <br>
+    
+            <button id="startExploreBtn" class="btn btn-fill" style="width:100%;"><strong>Let's Explore!</strong></button>
+        </div>
+    </div>
+
+    <!-- More Detail Pop-up -->
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <button class="back-btn" id="backToWelcome">&lt;</button>
+            <span class="close-btn" id="closeModal">&times;</span>
+
+            <h1 style="color:#990000;">What is Mark Six?</h1>
+            <p>
+                Mark Six is a <strong style="color:#990000;">6-out-of-49</strong> lottery game organized by the Hong Kong 
+                Jockey Club (HKJC). Since its launch in 1975, it has become a cultural staple, 
+                with proceeds supporting local charities and government revenue.
+            </p>
+            <br>
+            <ul style="padding-left: 20px;">
+                <li><strong style="color:#990000;">Cost:</strong> HK$10 per single entry</li>
+                <li><strong style="color:#990000;">Schedule:</strong> Draws typically occur every Tuesday, Thursday, and Saturday </li>
+                <li><strong style="color:#990000;">Pool:</strong> A single drum containing 49 balls (numbered 1 to 49)</li>
+            </ul>
+            <br>
+            <h2 style="color:#990000;">The Drawing Process</h2>
+            <p>
+                In every draw, the HKJC uses a transparent machine to randomly select seven numbers in total.
+            </p>
+            <p>
+                <strong style="color:#990000;">1. Drawn Numbers:</strong> The first 6 balls out of the machine.<br>
+                <strong style="color:#990000;">2. Extra Number:</strong> The 7th ball drawn. 
+                This acts as a "bonus" or "half-number" used specifically to determine winners in the 2nd, 4th, and 6th prize tiers.
+            </p>
+            <br>
+            <h2 style="color:#990000;">The Prize Structure</h2>
+            <p>
+                To win, you must match a specific combination of the numbers you chose against the numbers drawn. 
+                Unlike some international lotteries, the order in which the numbers are drawn does not matter—only that you have them. 
+                Occasionally, the HKJC holds a Snowball Draw (often during festivals like Chinese New Year). 
+                They add a pre-existing "Snowball Pool" to the 1st Prize, often pushing the jackpot to over HK$100 Million.
             </p>
             <br>
             <div class="modal-buttons">
