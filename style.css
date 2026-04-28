@@ -38,6 +38,20 @@ body, html {
     opacity: 0.9;
     margin: 5px 0 20px;
 }
+.welcome-button {
+    background-color: white;
+    color: #990000;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+.welcome-button:hover {
+    background-color: #f0f0f0;
+    transform: scale(1.03);
+}
 .info-button {
     background-color: white;
     color: #990000;
@@ -447,6 +461,23 @@ body, html {
     font-size: 40px;
     cursor: pointer;
     color: #333;
+}
+.close-btn:hover  {
+    color: #6a0000;
+}
+.back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 35px;
+    color: #333;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+}
+.back-btn:hover {
+    color: #6a0000;
 }
 .modal-buttons {
     display: flex;
