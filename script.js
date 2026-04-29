@@ -1160,7 +1160,7 @@ async function loadFrequencyDataHotCold() {
 }
 
 // ==============================
-// Page 4: Co-occurrence
+// Page 4: Co-occurrence 
 // ==============================
 let cooccurMatrix = {};
 let cooccurSvg;
@@ -1168,6 +1168,12 @@ let linksGroup;
 let nodesGroup;
 let activePair = null;
 let includeExtraPage4 = true;
+let focusedNumber = null; 
+
+function getNumberColor(n) {
+  const hue = ((n-1) * 360) / 49;
+  return `hsl(${hue}, 85%, 60%)`;
+}
 
 // Bind checkbox switch
 document.addEventListener('DOMContentLoaded', () => {
@@ -1191,14 +1197,13 @@ document.addEventListener('DOMContentLoaded', () => {
 async function startCooccurPage() {
   await buildCooccurrenceMatrix();
 
-  // Create an SVG canvas
   const width = 800;
   const height = 800;
   const radius = Math.min(width, height) / 2 - 40;
 
   const container = d3.select("#cooccur-svg-container");
-
   container.html("");
+  
   cooccurSvg = container.append("svg")
     .attr("width", width)
     .attr("height", height)
@@ -1208,26 +1213,38 @@ async function startCooccurPage() {
   linksGroup = cooccurSvg.append("g").attr("class", "links");
   nodesGroup = cooccurSvg.append("g").attr("class", "nodes");
 
-  // Generate circular arrangement of node positions
-  const numbers = d3.range(1, 50); // 1-49
+  const numbers = d3.range(1, 50);
   const angleStep = (2 * Math.PI) / numbers.length;
   const positions = {};
   numbers.forEach((n, i) => {
-    const angle = i * angleStep - Math.PI / 2; // Arrange from top to bottom
+    const angle = i * angleStep - Math.PI / 2;
     positions[n] = {
       x: radius * Math.cos(angle),
       y: radius * Math.sin(angle)
     };
   });
 
-  // Draw nodes (number circles)
+  // Node rainbow colors + click function
   nodesGroup.selectAll("circle.cooccur-node")
     .data(numbers)
     .join("circle")
     .attr("class", "cooccur-node")
     .attr("cx", d => positions[d].x)
     .attr("cy", d => positions[d].y)
-    .attr("r", 18);
+    .attr("r", 18)
+    .attr("fill", d => getNumberColor(d))
+    .attr("stroke", "#fff")
+    .attr("stroke-width", 2)
+    .style("cursor", "pointer")
+    .on("click", function(_, d) {
+      // Click on the number then show only lines related to it
+      if (focusedNumber === d) {
+        focusedNumber = null;
+      } else {
+        focusedNumber = d;
+      }
+      updateLinkVisibility();
+    });
 
   nodesGroup.selectAll("text.cooccur-text")
     .data(numbers)
@@ -1238,25 +1255,36 @@ async function startCooccurPage() {
     .attr("dominant-baseline", "middle")
     .text(d => d);
 
-  // Slide bar event: Update link
   const slider = d3.select("#thresholdSlider");
   slider.on("input", () => {
     const threshold = +slider.property("value");
     drawCooccurrenceLinks(positions, threshold);
   });
 
-  // Initially display (threshold=47)
   drawCooccurrenceLinks(positions, 47);
-
   renderTopPairs();
 }
 
-// Establish co-occurrence matrix
+// After clicking the number, only the related connection is displayed.
+function updateLinkVisibility() {
+  d3.selectAll("path.cooccur-link").each(function() {
+    const d = d3.select(this).datum();
+    if (!focusedNumber) {
+      d3.select(this).style("display", "block");
+    } else {
+      if (d.source === focusedNumber || d.target === focusedNumber) {
+        d3.select(this).style("display", "block");
+      } else {
+        d3.select(this).style("display", "none");
+      }
+    }
+  });
+}
+
 async function buildCooccurrenceMatrix() {
   const data = await d3.csv("Mark_Six.csv");
   cooccurMatrix = {};
 
-  // Initialization matrix
   for (let a = 1; a <= 49; a++) {
     cooccurMatrix[a] = {};
     for (let b = 1; b <= 49; b++) {
@@ -1264,7 +1292,6 @@ async function buildCooccurrenceMatrix() {
     }
   }
 
-  // Count the co-occurrences of each group of numbers
   data.forEach(d => {
     const mainNumbers = [
       +d["Winning Number 1"], 
@@ -1276,15 +1303,12 @@ async function buildCooccurrenceMatrix() {
     ].filter(n => !isNaN(n));
     
     const extraNum = +d["Extra Number"];
-
     let nums = [...mainNumbers];
     
-    // Add extra number if checked.
     if (includeExtraPage4 && !isNaN(extraNum)) {
       nums.push(extraNum);
     }
 
-    // Pairwise pairing statistics
     for (let i = 0; i < nums.length; i++) {
       for (let j = i + 1; j < nums.length; j++) {
         const a = nums[i];
@@ -1298,37 +1322,24 @@ async function buildCooccurrenceMatrix() {
   });
 }
 
-// Draw links based on thresholds
 function drawCooccurrenceLinks(positions, threshold) {
   const links = [];
-  // First, collect all links that are greater than or equal to the threshold
-  // Then find the maximum number of occurrences to facilitate setting the scale
   let maxCount = 0;
+
   for (let a = 1; a <= 49; a++) {
     for (let b = a + 1; b <= 49; b++) {
       const count = cooccurMatrix[a][b];
       if (count >= threshold) {
-        links.push({
-          source: a,
-          target: b,
-          count: count
-        });
+        links.push({ source: a, target: b, count: count });
         if (count > maxCount) maxCount = count;
       }
     }
   }
 
-  // The more, the wider the line
   const widthScale = d3.scaleLinear()
     .domain([threshold, maxCount])
     .range([0.5, 10]);
 
-  // The more, the lighter the color
-  const colorScale = d3.scaleLinear()
-    .domain([threshold, maxCount])
-    .range(["#2c3e80", "#b0b8e8"]);
-
-  // Update lines
   const linkSelection = linksGroup.selectAll("path.cooccur-link")
     .data(links, d => `${d.source}-${d.target}`);
 
@@ -1343,20 +1354,18 @@ function drawCooccurrenceLinks(positions, threshold) {
       const sy = positions[d.source].y;
       const tx = positions[d.target].x;
       const ty = positions[d.target].y;
-
-      // Bézier curves for circular layouts
       const mx = (sx + tx) / 4;  
       const my = (sy + ty) / 4;
       return `M ${sx} ${sy} Q ${mx} ${my} ${tx} ${ty}`;
     })
     .style("fill", "none")
     .style("stroke-width", d => widthScale(d.count))
-    .style("stroke", d => colorScale(d.count))
-    .style("stroke-opacity", 0.8)
-
-    // Save the original style for restoration.
+    .style("stroke", d => getNumberColor(d.source))
+    .style("stroke-opacity", 0.85)
     .attr("data-original-width", d => widthScale(d.count))
-    .attr("data-original-color", d => colorScale(d.count));
+    .attr("data-original-color", d => getNumberColor(d.source));
+
+  updateLinkVisibility();
 }
 
 function renderTopPairs() {
@@ -1372,9 +1381,7 @@ function renderTopPairs() {
     }
   }
 
-  // Take the Top 10 pairs
   const topPairs = allPairs.sort((x, y) => y.cnt - x.cnt).slice(0, 10);
-
   const container = document.getElementById("top-pairs-container");
   container.innerHTML = "";
   container.style.opacity = "0";
@@ -1414,13 +1421,11 @@ function renderTopPairs() {
     }, index * 40);
   });
 
-  // Fade in
   setTimeout(() => {
     container.style.opacity = "1";
   }, 100);
 }
 
-// Highlight Co-occurrence connection 
 function highlightConnection(a, b) {
   clearAllHighlight();
 
@@ -1433,7 +1438,7 @@ function highlightConnection(a, b) {
         .style("stroke", "#ffcc00")
         .style("stroke-width", 10)
         .style("stroke-opacity", 1)
-        .raise(); //Dropping this line to the "top layer" to avoid blocking.
+        .raise();
     }
   });
 }
@@ -1446,7 +1451,7 @@ function clearAllHighlight() {
     d3.select(this)
       .style("stroke", originalColor)
       .style("stroke-width", originalWidth)
-      .style("stroke-opacity", 0.8);
+      .style("stroke-opacity", 0.85);
   });
 }
 
