@@ -1237,7 +1237,7 @@ async function startCooccurPage() {
   .attr("stroke-width", 2)
   .style("cursor", "pointer")
   .on("click", (e, num) => {
-    // 切換 聚焦 / 取消聚焦
+    // Switch focus / defocus
     focusedNumber = focusedNumber === num ? null : num;
     updateLinkFilter();
   });
@@ -1406,14 +1406,12 @@ function renderTopPairs() {
       el.onclick = () => {
         const pairNumA = p.a;
         const pairNumB = p.b;
-      
-        // ========== 關鍵判斷 ==========
-        // 如果目前有鎖定號碼，且這個 pair 跟鎖定號碼無關
+        // If there is currently a locked number, and this pair is unrelated to the locked number.
         if(focusedNumber !== null 
           && focusedNumber !== pairNumA 
           && focusedNumber !== pairNumB)
         {
-          // 自動取消號碼篩選
+          // Automatically cancel number filtering
           focusedNumber = null;
           updateLinkFilter();
         }
