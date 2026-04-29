@@ -722,6 +722,13 @@ navBtns.forEach((btn, idx) => {
       resetAllBalls();
       startPrizeChart();
     }
+    else if (pageIds[idx] === "page-trend") {
+      rightPanel.style.display = "none";
+      rightPanel.classList.remove("active");
+    
+      resetAllBalls();
+      startFutureTrend();
+    }
     else {
       rightPanel.style.display = "none";
       rightPanel.classList.remove("active");
@@ -2481,3 +2488,134 @@ d3.select("#filterZeroBtn").on("click",()=>{
   );
   renderChart();
 });
+
+// ==============================
+// Page 9: Future Trend
+// ==============================
+async function startFutureTrend() {
+  const raw = await d3.csv("Mark_Six.csv");
+
+  let countMap = {};
+  for(let i = 1; i <= 49; i++) countMap[i] = 0;
+
+  raw.forEach(row => {
+    const nums = [
+      +row["Winning Number 1"],+row["2"],+row["3"],
+      +row["4"],+row["5"],+row["6"]
+    ];
+    nums.forEach(n => {
+      if(countMap[n] !== undefined) countMap[n]++;
+    });
+  });
+
+  const data = d3.range(1,50).map(num => ({
+    number: num,
+    count: countMap[num]
+  }));
+
+  // Automatically sorted into cold/normal/hot
+  const counts = data.map(d => d.count).sort(d3.ascending);
+  const q1 = d3.quantile(counts, 0.25);
+  const q3 = d3.quantile(counts, 0.75);
+
+  const container = d3.select("#future-trend-chart");
+  container.html("");
+
+  const width = 1100;
+  const height = 580;
+  const margin = { top: 70, right: 20, bottom: 160, left: 60 };
+  const svg = container.append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const innerW = width - margin.left - margin.right;
+  const innerH = height - margin.top - margin.bottom;
+
+  const x = d3.scaleBand()
+    .domain(data.map(d => d.number))
+    .range([0, innerW])
+    .padding(0.25);
+
+  const y = d3.scaleLinear()
+    .domain([0, d3.max(data, d => d.count)])
+    .range([innerH, 0]);
+
+  // tooltip
+  const tooltip = d3.select("body").append("div")
+    .attr("class","future-tooltip");
+
+  // Long bar chart
+  svg.selectAll("rect")
+    .data(data)
+    .enter()
+    .append("rect")
+    .attr("x", d => x(d.number))
+    .attr("y", d => y(d.count))
+    .attr("width", x.bandwidth())
+    .attr("height", d => innerH - y(d.count))
+    .attr("class", d => {
+      if(d.count <= q1) return "future-bar-cold";
+      if(d.count >= q3) return "future-bar-hot";
+      return "future-bar-normal";
+    })
+    .on("mouseover", (e,d) => {
+      let typeText;
+      if(d.count <= q1) typeText = "✅ Recommended (Cold)";
+      else if(d.count >= q3) typeText = "❌ Not Recommended (Hot)";
+      else typeText = "⚫ Neutral";
+
+      tooltip.style("opacity",1)
+        .html(`Number: ${d.number}<br/>Appearances: ${d.count}<br/>${typeText}`)
+        .style("left", e.clientX + 15 + "px")
+        .style("top", e.clientY - 40 + "px");
+    })
+    .on("mouseout", () => tooltip.style("opacity",0));
+
+  // Axis Line
+  svg.append("g")
+    .attr("transform", `translate(0,${innerH})`)
+    .call(d3.axisBottom(x).tickValues(d3.range(1,50,2)));
+
+  svg.append("g")
+    .call(d3.axisLeft(y));
+
+  // Axis Labels
+  svg.append("text")
+    .attr("x", innerW/2)
+    .attr("y", innerH + 45)
+    .style("text-anchor","middle")
+    .style("font-size","15px")
+    .text("Lottery Number 1 – 49");
+
+  svg.append("text")
+    .attr("transform","rotate(-90)")
+    .attr("x", -innerH/2)
+    .attr("y", -45)
+    .style("text-anchor","middle")
+    .style("font-size","15px")
+    .text("Total Appearance");
+
+  // Title position
+  svg.append("text")
+    .attr("x", innerW/2)
+    .attr("y", -35)
+    .style("text-anchor","middle")
+    .style("font-size","20px")
+    .style("font-weight","bold")
+    .text("Future Trend | Best Numbers to Choose");
+
+  // Legend
+  const legend = svg.append("g")
+    .attr("transform", `translate(${innerW/2 - 220}, ${innerH + 80})`);
+
+  legend.append("rect").attr("x",0).attr("y",0).attr("width",18).attr("height",18).attr("fill","#0066aa");
+  legend.append("text").attr("x",30).attr("y",14).style("font-size","14px").text("Recommended (Cold Numbers)");
+
+  legend.append("rect").attr("x",0).attr("y",30).attr("width",18).attr("height",18).attr("fill","#777");
+  legend.append("text").attr("x",30).attr("y",44).style("font-size","14px").text("Neutral Numbers");
+
+  legend.append("rect").attr("x",0).attr("y",60).attr("width",18).attr("height",18).attr("fill","#990000");
+  legend.append("text").attr("x",30).attr("y",74).style("font-size","14px").text("Not Recommended (Hot Numbers)");
+}
