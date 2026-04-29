@@ -1226,25 +1226,21 @@ async function startCooccurPage() {
 
   // Node rainbow colors + click function
   nodesGroup.selectAll("circle.cooccur-node")
-    .data(numbers)
-    .join("circle")
-    .attr("class", "cooccur-node")
-    .attr("cx", d => positions[d].x)
-    .attr("cy", d => positions[d].y)
-    .attr("r", 18)
-    .attr("fill", d => getNumberColor(d))
-    .attr("stroke", "#fff")
-    .attr("stroke-width", 2)
-    .style("cursor", "pointer")
-    .on("click", function(_, d) {
-      // Click on the number then show only lines related to it
-      if (focusedNumber === d) {
-        focusedNumber = null;
-      } else {
-        focusedNumber = d;
-      }
-      updateLinkVisibility();
-    });
+  .data(numbers)
+  .join("circle")
+  .attr("class", "cooccur-node")
+  .attr("cx", d => positions[d].x)
+  .attr("cy", d => positions[d].y)
+  .attr("r", 18)
+  .attr("fill", d => getNumberColor(d))
+  .attr("stroke", "#fff")
+  .attr("stroke-width", 2)
+  .style("cursor", "pointer")
+  .on("click", (e, num) => {
+    // 切換 聚焦 / 取消聚焦
+    focusedNumber = focusedNumber === num ? null : num;
+    updateLinkFilter();
+  });
 
   nodesGroup.selectAll("text.cooccur-text")
     .data(numbers)
@@ -1366,6 +1362,21 @@ function drawCooccurrenceLinks(positions, threshold) {
     .attr("data-original-color", d => getNumberColor(d.source));
 
   updateLinkVisibility();
+  updateLinkFilter();
+}
+// Number Filtering: Hide/Show Lines
+function updateLinkFilter() {
+  d3.selectAll("path.cooccur-link").each(function(){
+    const d = d3.select(this).datum();
+    if(!focusedNumber){
+      // No filter: Show all
+      d3.select(this).style("display","block");
+    }else{
+      // Selected Numbers: Only related connections will be displayed.
+      const isRelated = (d.source === focusedNumber) || (d.target === focusedNumber);
+      d3.select(this).style("display", isRelated ? "block" : "none");
+    }
+  });
 }
 
 function renderTopPairs() {
@@ -1393,6 +1404,21 @@ function renderTopPairs() {
       el.style.transform = "translateY(6px)";
 
       el.onclick = () => {
+        const pairNumA = p.a;
+        const pairNumB = p.b;
+      
+        // ========== 關鍵判斷 ==========
+        // 如果目前有鎖定號碼，且這個 pair 跟鎖定號碼無關
+        if(focusedNumber !== null 
+          && focusedNumber !== pairNumA 
+          && focusedNumber !== pairNumB)
+        {
+          // 自動取消號碼篩選
+          focusedNumber = null;
+          updateLinkFilter();
+        }
+        // =============================
+      
         if (activePair?.a === p.a && activePair?.b === p.b) {
           activePair = null;
           clearAllHighlight();
@@ -1435,7 +1461,7 @@ function highlightConnection(a, b) {
       (d.source === b && d.target === a)
     ) {
       d3.select(this)
-        .style("stroke", "#ffcc00")
+        .style("stroke", "#000000")
         .style("stroke-width", 10)
         .style("stroke-opacity", 1)
         .raise();
