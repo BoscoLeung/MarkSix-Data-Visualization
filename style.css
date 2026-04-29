@@ -1123,3 +1123,33 @@ body, html {
 #filterZeroBtn:hover {
     background: #0088dd;
 }
+
+/* Page9 Future Trend */
+.future-bar-hot { fill: #990000; transition: 0.2s; }
+.future-bar-normal { fill: #777777; transition: 0.2s; }
+.future-bar-cold { fill: #0066aa; transition: 0.2s; }
+
+.future-bar-hot:hover {
+  filter: drop-shadow(0 0 6px #990000);
+  transform: scaleY(1.03);
+}
+.future-bar-normal:hover {
+  filter: drop-shadow(0 0 4px #777);
+  transform: scaleY(1.03);
+}
+.future-bar-cold:hover {
+  filter: drop-shadow(0 0 6px #0066aa);
+  transform: scaleY(1.03);
+}
+
+.future-tooltip {
+  position: fixed !important;
+  background: rgba(0,0,0,0.85);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  pointer-events: none;
+  font-size: 13px;
+  opacity: 0;
+  z-index: 999;
+}
