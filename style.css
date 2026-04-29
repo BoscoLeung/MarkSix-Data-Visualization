@@ -757,6 +757,7 @@ body, html {
     fill: white;
     stroke: red;
     stroke-width: 2;
+    cursor: pointer;
 }
 .cooccur-link {
     stroke: #7b84d6;
@@ -766,6 +767,8 @@ body, html {
     font-size: 14px;
     text-anchor: middle;
     fill: black;
+    font-weight: bold;
+    pointer-events: none;
 }
 .desc-text {
     margin-top: 12px;
