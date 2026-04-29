@@ -465,7 +465,10 @@ body, html {
   margin-top: 6px;
   margin-bottom: 6px;
 }
-
+.modal-content a {
+    margin-top: 4px;
+    margin-bottom: 12px;
+}
 .close-btn {
     position: absolute;
     top: 20px;
@@ -493,8 +496,7 @@ body, html {
 }
 .modal-buttons {
     display: flex;
-    gap: 20px;
-    margin-top: 30px;
+    gap: 30px;
     justify-content: center;
 }
 .btn {
