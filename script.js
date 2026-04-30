@@ -2116,22 +2116,12 @@ async function startWeekdayHeatmap() {
     drawHeatmap(currentWeekday);
   });
 
-  // Extra toggle (Statistics will now be reset)
-  d3.select("#btn-main-only").on("click", function () {
-    includeExtraNumber = false;
-    d3.selectAll(".extra-btn").classed("active", false);
-    d3.select(this).classed("active", true);
-    
-    // Re-statistics and re-draw
-    recalculateData(); 
-    drawHeatmap(currentWeekday);
-  });
-  
-  d3.select("#btn-include-extra").on("click", function () {
-    includeExtraNumber = true;
-    d3.selectAll(".extra-btn").classed("active", false);
-    d3.select(this).classed("active", true);
-    
+  // Extra Number Checkbox (Same Design as Page 3 / 6)
+  const includeExtraPage7 = document.getElementById("includeExtraPage7");
+  includeExtraPage7.checked = false;
+
+  includeExtraPage7.addEventListener("change", function () {
+    includeExtraNumber = this.checked; // Check = Include Extra
     recalculateData();
     drawHeatmap(currentWeekday);
   });
@@ -2200,11 +2190,17 @@ function drawHeatmap(targetDay) {
     row: Math.floor(i / cols)
   }));
 
-  // Color mapping: darker = more layers
-  const maxVal = d3.max(data, d => d.count);
+  // Use the maximum/minimum value of the current day
+  const counts = data.map(d => d.count);
+  const minVal = d3.min(counts);
+  const maxVal = d3.max(counts);
+
+  // To prevent the color from failing when all values ​​are 0, the boundaries need to be processed
+  const domainMax = maxVal === minVal ? minVal + 1 : maxVal;
+
   const colorScale = d3.scaleSequential()
-    .domain([0, maxVal])
-    .interpolator(d3.interpolateYlOrRd); // Yellow → Orange → Red
+    .domain([minVal, domainMax])
+    .interpolator(d3.interpolateYlOrRd);
 
   // Draw grid
   svg.selectAll(".heat-cell")
@@ -2232,7 +2228,7 @@ function drawHeatmap(targetDay) {
     .attr("text-anchor", "middle")
     .attr("dominant-baseline", "middle")
     .text(d => d.num)
-    .style("fill", d => d.count > maxVal * 0.6 ? "#fff" : "#000") // White text on dark background
+    .style("fill", d => d.count > (minVal + (domainMax - minVal) * 0.6) ? "#fff" : "#000")
     .style("font-size", "28px")
     .style("font-weight", "bold");
 
@@ -2246,7 +2242,7 @@ function drawHeatmap(targetDay) {
     .attr("text-anchor", "middle")
     .attr("dominant-baseline", "middle")
     .text(d => `${d.count}x`)
-    .style("fill", d => d.count > maxVal * 0.6 ? "#fff" : "#333")
+    .style("fill", d => d.count > (minVal + (domainMax - minVal) * 0.6) ? "#fff" : "#333")
     .style("font-size", "16px");
 
   // 3. title of the heatmap
