@@ -540,6 +540,47 @@ body, html {
 #freq-ball-wrap .num-ball:not(.selected):hover .num-text {
     transition: color 0.2s ease;
 }
+.freq-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 24px;
+    margin: 20px 20px;
+    max-width: 400px;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 30px;
+    background: #990000;
+    color: white;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-sizing: border-box;
+}
+.freq-checkbox-label:hover {
+    background: #b30000;
+    transform: scale(1.03);
+}
+.freq-checkbox-label input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid white;
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+}
+.freq-checkbox-label input[type="checkbox"]:checked::after {
+    content: "✓";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+}
 
 /* Page 2 middle ball area */
 .freq-container {
