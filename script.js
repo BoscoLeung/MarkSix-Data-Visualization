@@ -902,23 +902,21 @@ async function startFrequencyPage() {
   setFreqButtonActive("sort");
 }
 
-// Exclude Extra function
-const btnExExtra = document.getElementById("btnExcludeExtra");
+// Include Extra Number Checkbox
+const chkIncludeExtra = document.getElementById("chkIncludeExtra");
 const statusLabel = document.getElementById("freqStatusLabel");
 
-btnExExtra.onclick = async function(){
-  excludeExtra = !excludeExtra;
+// Initialization: Default selection = Includes Extra Number
+chkIncludeExtra.checked = true;
+excludeExtra = false;
 
-  if(excludeExtra){
-    this.textContent = "Include Extra Number";
-    this.style.background = "#0066aa";
-    
+chkIncludeExtra.addEventListener("change", async function() {
+  excludeExtra = !this.checked;
+
+  if (excludeExtra) {
     statusLabel.textContent = "Current status: Excludes Extra numbers";
     statusLabel.className = "freq-status-label status-exclude";
-  }else{
-    this.textContent = "Exclude Extra Number";
-    this.style.background = "#990000";
-    
+  } else {
     statusLabel.textContent = "Current status: Includes Extra numbers";
     statusLabel.className = "freq-status-label status-include";
   }
@@ -926,7 +924,7 @@ btnExExtra.onclick = async function(){
   await loadFrequencyData();
   sortByFreq();
   setFreqButtonActive("sort");
-};
+});
 
 // Sort By Frequency function
 function sortByFreq() {
