@@ -1415,7 +1415,6 @@ function renderTopPairs() {
           focusedNumber = null;
           updateLinkFilter();
         }
-        // =============================
       
         if (activePair?.a === p.a && activePair?.b === p.b) {
           activePair = null;
@@ -2300,6 +2299,10 @@ async function startPrizeChart() {
   });
 
   overallAverageFreqGlobal = d3.mean(rawPointsGlobal, d => d.avgFreq);
+
+  hideZeroJackpot = false;
+  d3.select("#filterZeroCheckbox").property("checked", false);
+
   renderChart();
 }
 
@@ -2519,11 +2522,9 @@ d3.select("#toggleChartBtn").on("click",()=>{
   renderChart();
 });
 
-d3.select("#filterZeroBtn").on("click",()=>{
-  hideZeroJackpot=!hideZeroJackpot;
-  d3.select("#filterZeroBtn").text(
-    hideZeroJackpot ? "Show 0 Jackpot" : "Hide 0 Jackpot"
-  );
+d3.select("#filterZeroCheckbox").on("change", function() {
+  // Get the status of the checkbox
+  hideZeroJackpot = this.checked;
   renderChart();
 });
 
