@@ -343,12 +343,6 @@ body, html {
     font-size: 25px;
     color: #1a202c;
 }
-.stats-title p {
-    margin: 5px 0 0;
-    color: #718096;
-    font-size: 16px;
-    text-align: left;
-}
 .stats-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -359,10 +353,6 @@ body, html {
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-.stat-card .icon {
-    font-size: 28px;
-    margin-bottom: 10px;
 }
 .stat-card .label {
     color: #4a5568;
