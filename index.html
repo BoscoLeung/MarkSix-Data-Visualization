@@ -117,11 +117,11 @@
                 <h1 style="color:#990000;">How often do certain pairs occur together?</h1>
 
                 <div class="controls-container">
-                    <label for="thresholdSlider">Threshold (Minimum frequency to be shown)</label>
+                    <label for="thresholdSlider">Threshold (Minimum frequency to be shown): <span><output id="range-value">0</output></span></label>
                     <div style="display:flex; align-items:center; gap:10px;">
-                      <span>25</span>
-                      <input type="range" id="thresholdSlider" min="25" max="70" value="47">
-                      <span>70</span>
+                      <span><output id="min-range">0</output> (Min)</span>
+                      <input type="range" id="thresholdSlider" min="25" max="67" value="46"/>
+                      <span><output id="max-range">0</output> (Max)</span>
                     </div>
 
                     <div class="desc-text">
