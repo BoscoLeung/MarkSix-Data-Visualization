@@ -694,9 +694,9 @@ body, html {
     transform: translateY(6px);
 }
 .hc-rank {
-    font-size: 16px;
-    color: #666;
-    width: 30px;
+    min-width: 40px;    /* 关键 */
+    text-align: center;  /* 数字靠右好看：# 9、#10 对齐 */
+    font-weight: bold;
 }
 .hc-ball {
     width: 50px;
@@ -735,7 +735,7 @@ body, html {
     background: #ffdddd;
     border-radius: 4px;
     position: relative;
-    min-width: 260px;
+    min-width: 200px;
 }
 .hot-bar-fill {
     position: absolute;
@@ -751,7 +751,7 @@ body, html {
     background: #d4ebf8;
     border-radius: 4px;
     position: relative;
-    min-width: 260px;
+    min-width: 200px;
 }
 .cold-bar-fill {
     position: absolute;
