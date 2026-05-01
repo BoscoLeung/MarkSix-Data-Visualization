@@ -1029,21 +1029,21 @@ document.getElementById("btnResetFreq").onclick = function() {
 // Page 3: Hot & Cold
 // ==============================
 let includeExtraPage3 = true;
+let freqDataPage3 = {};
 
-// Binding checkbox (with animation)
+// Binding checkbox
 document.addEventListener('DOMContentLoaded', () => {
   const check = document.getElementById('includeExtraPage3');
   check.checked = true;
 
   check.addEventListener('change', async () => {
     includeExtraPage3 = check.checked;
-
     await fadeOutHotCold();
     startHotColdPage();
   });
 });
 
-// Fade-out animation function
+// Fade-out animation
 function fadeOutHotCold() {
   return new Promise(resolve => {
     d3.selectAll(".hc-item")
@@ -1053,90 +1053,69 @@ function fadeOutHotCold() {
 }
 
 async function startHotColdPage() {
-  await loadFrequencyDataHotCold();
+    await loadFrequencyDataHotCold();
+  
+    const freqArray = Object.entries(freqDataPage3)
+      .map(([n, count]) => ({ n: +n, count }));
+  
+    const sortedHot = [...freqArray].sort((a, b) => b.count - a.count).slice(0, 10);
+    const sortedCold = [...freqArray].sort((a, b) => a.count - b.count).slice(0, 10);
+  
+    const maxCount = d3.max(freqArray, d => d.count);
 
-  const freqArray = Object.entries(freqData)
-    .map(([n, count]) => ({ n: +n, count }));
+    // Hot list
+    const hotList = d3.select("#hot-list");
+    hotList.html("");
 
-  const sortedHot = [...freqArray].sort((a, b) => b.count - a.count).slice(0, 10);
-  const sortedCold = [...freqArray].sort((a, b) => a.count - b.count).slice(0, 10);
-  const maxCount = d3.max(freqArray, d => d.count);
+    sortedHot.forEach((item, i) => {
+      const itemEl = hotList.append("div").attr("class", "hc-item");
 
-  // Hot list
-  const hotList = d3.select("#hot-list").html("");
-  sortedHot.forEach((item, i) => {
-    const row = hotList.append("div")
-      .attr("class", "hc-item")
-      .style("opacity", 0)
-      .style("transform", "translateY(6px)");
+      itemEl.append("div").attr("class", "hc-rank").text(`#${i + 1}`);
 
-    row.append("span").attr("class", "hc-rank").text(`#${i + 1}`);
-
-    if (i < 3) {
-      const svgWrap = row.append("div").attr("class", "hc-ball-svg");
+      const svgWrap = itemEl.append("div").attr("class", "hc-ball-svg");
       svgWrap.append("img")
         .attr("src", `images/ball-${item.n}.svg`)
         .attr("alt", item.n)
-        .style("width", "100%")
-        .style("height", "100%");
-    } else {
-      row.append("div")
-        .attr("class", "hc-ball")
-        .style("border-color", getMarkSixColor(item.n))
-        .text(item.n);
-    }
+        .style("width", i < 3 ? "100%" : "40px")
+        .style("height", i < 3 ? "100%" : "40px");
 
-    const bar = row.append("div").attr("class", "hot-bar");
-    bar.append("div")
-      .attr("class", "hot-bar-fill")
-      .style("width", `${(item.count / maxCount) * 100}%`);
+      const bar = itemEl.append("div").attr("class", "hot-bar");
+      bar.append("div")
+        .attr("class", "hot-bar-fill")
+        .style("width", `${(item.count / maxCount) * 100}%`);
 
-    row.append("span").attr("class", "hc-count").text(item.count);
-  });
+      itemEl.append("div").attr("class", "hc-count").text(item.count);
+    });
 
-  // Cold list
-  const coldList = d3.select("#cold-list").html("");
-  sortedCold.forEach((item, i) => {
-    const row = coldList.append("div")
-      .attr("class", "hc-item")
-      .style("opacity", 0)
-      .style("transform", "translateY(6px)");
+    // Cold list
+    const coldList = d3.select("#cold-list");
+    coldList.html("");
+  
+    sortedCold.forEach((item, i) => {
+      const itemEl = coldList.append("div").attr("class", "hc-item");
 
-    row.append("span").attr("class", "hc-rank").text(`#${i + 1}`);
+      itemEl.append("div").attr("class", "hc-rank").text(`#${i + 1}`);
 
-    if (i < 3) {
-      const svgWrap = row.append("div").attr("class", "hc-ball-svg");
+      const svgWrap = itemEl.append("div").attr("class", "hc-ball-svg");
       svgWrap.append("img")
         .attr("src", `images/ball-${item.n}.svg`)
-        .attr("alt", item.n);
-    } else {
-      row.append("div")
-        .attr("class", "hc-ball")
-        .style("border-color", getMarkSixColor(item.n))
-        .text(item.n);
-    }
+        .attr("alt", item.n)
+        .style("width", i < 3 ? "100%" : "40px")
+        .style("height", i < 3 ? "100%" : "40px");
 
-    const bar = row.append("div").attr("class", "cold-bar");
-    bar.append("div")
-      .attr("class", "cold-bar-fill")
-      .style("width", `${(item.count / maxCount) * 100}%`);
+      const bar = itemEl.append("div").attr("class", "cold-bar");
+      bar.append("div")
+        .attr("class", "cold-bar-fill")
+        .style("width", `${(item.count / maxCount) * 100}%`);
 
-    row.append("span").attr("class", "hc-count").text(item.count);
-  });
-
-  // Line-by-line fade-in animation
-  d3.selectAll(".hc-item")
-    .transition()
-    .delay((d, i) => i * 25)
-    .duration(300)
-    .style("opacity", 1)
-    .style("transform", "translateY(0px)");
+      itemEl.append("div").attr("class", "hc-count").text(item.count);
+    });
 }
 
 // Independent frequency calculation
 async function loadFrequencyDataHotCold() {
   const data = await d3.csv("Mark_Six.csv");
-  freqData = {};
+  freqDataPage3 = {};
 
   data.forEach(draw => {
     const mainNumbers = [
@@ -1146,12 +1125,12 @@ async function loadFrequencyDataHotCold() {
     const extraNum = +draw['Extra Number'];
 
     mainNumbers.forEach(n => {
-      if (n >= 1 && n <= 49) freqData[n] = (freqData[n] || 0) + 1;
+      if (n >= 1 && n <= 49) freqDataPage3[n] = (freqDataPage3[n] || 0) + 1;
     });
 
     if (includeExtraPage3) {
       if (extraNum >= 1 && extraNum <= 49) {
-        freqData[extraNum] = (freqData[extraNum] || 0) + 1;
+        freqDataPage3[extraNum] = (freqDataPage3[extraNum] || 0) + 1;
       }
     }
   });
