@@ -1158,322 +1158,396 @@ async function loadFrequencyDataHotCold() {
 }
 
 // ==============================
-// Page 4: Co-occurrence 
+// Page 4: Co-occurrence
 // ==============================
-let cooccurMatrix = {};
-let cooccurSvg;
-let linksGroup;
-let nodesGroup;
+let markSixData = [];
+let matrix;
+let minRange = 0;
+let maxRange = 0;
+let mid = 0;
+let allValues;
+let strokeScale;
+let opacityScale;
+let selectedIndex = -1;
 let activePair = null;
-let includeExtraPage4 = true;
-let focusedNumber = null; 
 
-function getNumberColor(n) {
-  const hue = ((n-1) * 360) / 49;
-  return `hsl(${hue}, 85%, 60%)`;
-}
-
-// Bind checkbox switch
-document.addEventListener('DOMContentLoaded', () => {
-  const check = document.getElementById('includeExtraPage4');
-  check.checked = true;
-
-  check.addEventListener('change', async () => {
-    includeExtraPage4 = check.checked;
-    d3.select("#thresholdSlider").property("value", 47);
-  
-    const svg = d3.select("#cooccur-svg-container svg");
-    svg.style("opacity", 0);
-  
-    setTimeout(async () => {
-      await startCooccurPage();
-      svg.style("opacity", 1);
-    }, 250);
-  });
-});
+let includeExtraPage4 = true; 
 
 async function startCooccurPage() {
-  await buildCooccurrenceMatrix();
+    markSixData = await loadCSVData();
+    countPairwiseNumbers();
 
-  const width = 800;
-  const height = 800;
-  const radius = Math.min(width, height) / 2 - 40;
+    if (!matrix || matrix.length === 0) {
+        console.error("Matrix is empty. Check CSV data.");
+        return;
+    }
 
-  const container = d3.select("#cooccur-svg-container");
-  container.html("");
-  
-  cooccurSvg = container.append("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .append("g")
-    .attr("transform", `translate(${width/2}, ${height/2})`);
+    maxRange = Math.max(...matrix.flat());
+    minRange = Math.min(...matrix.flat().filter(v => v > 0));
+    mid = Math.floor((maxRange + minRange) / 2);
 
-  linksGroup = cooccurSvg.append("g").attr("class", "links");
-  nodesGroup = cooccurSvg.append("g").attr("class", "nodes");
+    strokeScale = d3.scaleLinear()
+        .domain([minRange, maxRange])
+        .range([0.1, 10]);
 
-  const numbers = d3.range(1, 50);
-  const angleStep = (2 * Math.PI) / numbers.length;
-  const positions = {};
-  numbers.forEach((n, i) => {
-    const angle = i * angleStep - Math.PI / 2;
-    positions[n] = {
-      x: radius * Math.cos(angle),
-      y: radius * Math.sin(angle)
-    };
-  });
+    opacityScale = d3.scaleLinear()
+        .domain([minRange, maxRange])
+        .range([0.1, 1.0])
+        .clamp(true);
 
-  // Node rainbow colors + click function
-  nodesGroup.selectAll("circle.cooccur-node")
-  .data(numbers)
-  .join("circle")
-  .attr("class", "cooccur-node")
-  .attr("cx", d => positions[d].x)
-  .attr("cy", d => positions[d].y)
-  .attr("r", 18)
-  .attr("fill", d => getNumberColor(d))
-  .attr("stroke", "#fff")
-  .attr("stroke-width", 2)
-  .style("cursor", "pointer")
-  .on("click", (e, num) => {
-    // Switch focus / defocus
-    focusedNumber = focusedNumber === num ? null : num;
-    updateLinkFilter();
-  });
+    document.getElementById('thresholdSlider').min = minRange;
+    document.getElementById('thresholdSlider').max = maxRange;
+    document.getElementById('thresholdSlider').value = mid;
+    document.getElementById('range-value').innerText = mid;
+    document.getElementById('min-range').innerText = minRange;
+    document.getElementById('max-range').innerText = maxRange;
 
-  nodesGroup.selectAll("text.cooccur-text")
-    .data(numbers)
-    .join("text")
-    .attr("class", "cooccur-text")
-    .attr("x", d => positions[d].x)
-    .attr("y", d => positions[d].y)
-    .attr("dominant-baseline", "middle")
-    .text(d => d);
+    initSvgContainer();
+    drawChordDiagram(mid);
 
-  const slider = d3.select("#thresholdSlider");
-  slider.on("input", () => {
-    const threshold = +slider.property("value");
-    drawCooccurrenceLinks(positions, threshold);
-  });
+    // Slider scrolling, Only update styles, do not rebuild.
+    const slider = document.getElementById('thresholdSlider');
+    slider.addEventListener('input', function() {
+        const threshold = +this.value;
+        document.getElementById('range-value').textContent = threshold;
+        updateChordByThreshold(threshold);
+    });
 
-  drawCooccurrenceLinks(positions, 47);
-  renderTopPairs();
+    // Checkbox Switch
+    const extraCheckbox = document.getElementById('includeExtraPage4');
+    if (extraCheckbox) {
+        extraCheckbox.checked = includeExtraPage4;
+        extraCheckbox.addEventListener('change', async function() {
+            includeExtraPage4 = this.checked;
+            countPairwiseNumbers();
+
+            maxRange = Math.max(...matrix.flat());
+            minRange = Math.min(...matrix.flat().filter(v => v > 0));
+            mid = Math.floor((maxRange + minRange) / 2);
+
+            document.getElementById('thresholdSlider').min = minRange;
+            document.getElementById('thresholdSlider').max = maxRange;
+            document.getElementById('thresholdSlider').value = mid;
+            document.getElementById('range-value').innerText = mid;
+            document.getElementById('min-range').innerText = minRange;
+            document.getElementById('max-range').innerText = maxRange;
+
+            drawChordDiagram(mid);
+            await renderTopPairs();
+        });
+    }
+
+    await renderTopPairs();
 }
 
-// After clicking the number, only the related connection is displayed.
-function updateLinkVisibility() {
-  d3.selectAll("path.cooccur-link").each(function() {
-    const d = d3.select(this).datum();
-    if (!focusedNumber) {
-      d3.select(this).style("display", "block");
-    } else {
-      if (d.source === focusedNumber || d.target === focusedNumber) {
-        d3.select(this).style("display", "block");
-      } else {
-        d3.select(this).style("display", "none");
+let svg, ribbonGroup, arcGroup, labelGroup;
+function initSvgContainer() {
+    const width = 800;
+    const height = 800;
+    const container = d3.select("#cooccur-svg-container");
+    container.html("");
+
+    svg = container.append("svg")
+        .attr("viewBox", [-width / 2, -height / 2, width, height]);
+
+    ribbonGroup = svg.append("g").attr("id", "ribbon-container");
+    arcGroup = svg.append("g").attr("id", "arc-container");
+    labelGroup = svg.append("g").attr("id", "label-container");
+}
+
+function drawChordDiagram(threshold) {
+    const outerRadius = 320;
+    const innerRadius = outerRadius - 40;
+    const labelRadius = outerRadius + 30;
+
+    strokeScale = d3.scaleLinear()
+        .domain([threshold, maxRange])
+        .range([1, 10])
+        .clamp(true);
+
+    opacityScale = d3.scaleLinear()
+        .domain([threshold, maxRange])
+        .range([0.3, 1.0]);
+
+    const chord = d3.chord().padAngle(0.02).sortSubgroups(d3.descending);
+    const chords = chord(matrix);
+
+    // Arcs
+    arcGroup.selectAll("*").remove();
+    const group = arcGroup.selectAll("g")
+        .data(chords.groups)
+        .join("g")
+        .attr("class", "group")
+        .style("cursor", "pointer")
+        .on("click", handleNodeClick);
+
+    group.append("path")
+        .attr("fill", d => getMarkSixColor(d.index + 1))
+        .attr("stroke", d => d3.rgb(getMarkSixColor(d.index + 1)).darker())
+        .attr("d", d3.arc().innerRadius(innerRadius).outerRadius(outerRadius));
+
+    // Ribbons
+    ribbonGroup.selectAll("*").remove();
+    ribbonGroup.style("fill-opacity", 0.67)
+        .selectAll("path")
+        .data(chords.map(d => {
+            const gSrc = chords.groups[d.source.index];
+            const gTgt = chords.groups[d.target.index];
+            const sMid = (gSrc.startAngle + gSrc.endAngle) / 2;
+            const tMid = (gTgt.startAngle + gTgt.endAngle) / 2;
+            return {
+                ...d,
+                source: { ...d.source, startAngle: sMid, endAngle: sMid },
+                target: { ...d.target, startAngle: tMid, endAngle: tMid }
+            };
+        }))
+        .join("path")
+        .attr("class", "ribbon")
+        .attr("d", d3.ribbon().radius(innerRadius))
+        .attr("fill", "none")
+        .attr("stroke", d => d3.rgb(getMarkSixColor(d.source.index + 1)).darker())
+        .style("vector-effect", "non-scaling-stroke")
+        .attr("stroke-width", d => strokeScale(d.source.value))
+        .style("stroke-opacity", d => opacityScale(d.source.value));
+
+    // Labels
+    labelGroup.selectAll("*").remove();
+    const labels = labelGroup.selectAll("g")
+        .data(chords.groups)
+        .join("g")
+        .attr("class", "labels")
+        .attr("transform", d => `
+            rotate(${((d.startAngle + d.endAngle) / 2 * 180 / Math.PI - 90)})
+            translate(${labelRadius})
+            rotate(90)
+        `)
+        .on("click", handleNodeClick)
+        .style("cursor", "pointer");
+
+    labels.append("text")
+        .attr("dy", "0.35em")
+        .attr("text-anchor", "middle")
+        .text(d => d.index + 1)
+        .style("font-family", "sans-serif")
+        .style("font-size", "20px")
+        .style("font-weight", "bold");
+
+    labels.insert("circle", "text")
+        .attr("fill", "white")
+        .attr("stroke", d => getMarkSixColor(d.index + 1))
+        .attr("stroke-width", 2)
+        .attr("r", 20);
+
+    svg.style("opacity", 1);
+
+    // Click on a blank area, then reset all filters, connections, and ball colors
+    svg.on("click", (event) => {
+      // Reset only when clicking on a blank area to avoid triggering when clicking on a node
+      if (event.target === svg.node()) {
+          const threshold = +document.getElementById('thresholdSlider').value;
+          resetDiagram(threshold);
       }
-    }
-  });
+    });
 }
 
-async function buildCooccurrenceMatrix() {
-  const data = await d3.csv("Mark_Six.csv");
-  cooccurMatrix = {};
+// Update lines only when sliding
+function updateChordByThreshold(threshold) {
+    strokeScale = d3.scaleLinear()
+        .domain([threshold, maxRange])
+        .range([1, 10])
+        .clamp(true);
 
-  for (let a = 1; a <= 49; a++) {
-    cooccurMatrix[a] = {};
-    for (let b = 1; b <= 49; b++) {
-      cooccurMatrix[a][b] = 0;
-    }
+    opacityScale = d3.scaleLinear()
+        .domain([threshold, maxRange])
+        .range([0.3, 1.0]);
+
+    d3.selectAll(".ribbon")
+        .attr("stroke-width", d => strokeScale(d.source.value))
+        .style("stroke-opacity", d => d.source.value >= threshold ? opacityScale(d.source.value) : 0);
+}
+
+function updateRangeValue(val) {
+    document.getElementById('range-value').textContent = val;
+}
+
+function handleNodeClick(event, d) {
+  selectedIndex = d.index;
+  const threshold = +document.getElementById('thresholdSlider').value;
+
+  const tempMax = Math.max(...matrix[selectedIndex]);
+  const localStrokeScale = d3.scaleLinear()
+      .domain([threshold, tempMax])
+      .range([1, 10]);
+
+  const localOpacityScale = d3.scaleLinear()
+      .domain([threshold, tempMax])
+      .range([0.5, 1])
+      .clamp(true);
+
+  let connectedIndices = new Set([selectedIndex]);
+
+  d3.selectAll(".ribbon")
+      .style("stroke-width", d => localStrokeScale(d.source.value) + "px")
+      .style("opacity", ribbon => {
+          const isConnected = ribbon.source.index === selectedIndex || ribbon.target.index === selectedIndex;
+          const isAboveThreshold = ribbon.source.value >= threshold;
+
+          if (isConnected && isAboveThreshold) {
+              connectedIndices.add(ribbon.source.index);
+              connectedIndices.add(ribbon.target.index);
+          }
+
+          return (isConnected && isAboveThreshold) ? localOpacityScale(ribbon.source.value) : 0;
+      });
+
+  d3.selectAll(".labels circle")
+      .style("fill", function(group) {
+          return connectedIndices.has(group.index) ? getMarkSixColor(group.index + 1) : "white";
+      });
+
+  event.stopPropagation();
+}
+
+function highlightChord(num1, num2) {
+  const sourceIndex = allValues.indexOf(num1);
+  const targetIndex = allValues.indexOf(num2);
+
+  if (sourceIndex === -1 || targetIndex === -1) {
+    console.log("Number not found:", num1, num2);
+    return;
   }
 
-  data.forEach(d => {
-    const mainNumbers = [
-      +d["Winning Number 1"], 
-      +d["2"], 
-      +d["3"], 
-      +d["4"], 
-      +d["5"], 
-      +d["6"]
-    ].filter(n => !isNaN(n));
-    
-    const extraNum = +d["Extra Number"];
-    let nums = [...mainNumbers];
-    
-    if (includeExtraPage4 && !isNaN(extraNum)) {
-      nums.push(extraNum);
-    }
+  // Reset all states.
+  const threshold = +document.getElementById('thresholdSlider').value;
+  resetDiagram(threshold);
 
-    for (let i = 0; i < nums.length; i++) {
-      for (let j = i + 1; j < nums.length; j++) {
-        const a = nums[i];
-        const b = nums[j];
-        if (a !== b) {
-          cooccurMatrix[a][b]++;
-          cooccurMatrix[b][a]++;
-        }
-      }
-    }
-  });
-}
-
-function drawCooccurrenceLinks(positions, threshold) {
-  const links = [];
-  let maxCount = 0;
-
-  for (let a = 1; a <= 49; a++) {
-    for (let b = a + 1; b <= 49; b++) {
-      const count = cooccurMatrix[a][b];
-      if (count >= threshold) {
-        links.push({ source: a, target: b, count: count });
-        if (count > maxCount) maxCount = count;
-      }
-    }
-  }
-
-  const widthScale = d3.scaleLinear()
-    .domain([threshold, maxCount])
-    .range([0.5, 10]);
-
-  const linkSelection = linksGroup.selectAll("path.cooccur-link")
-    .data(links, d => `${d.source}-${d.target}`);
-
-  linkSelection.exit().remove();
-
-  linkSelection.enter()
-    .append("path")
-    .attr("class", "cooccur-link")
-    .merge(linkSelection)
-    .attr("d", d => {
-      const sx = positions[d.source].x;
-      const sy = positions[d.source].y;
-      const tx = positions[d.target].x;
-      const ty = positions[d.target].y;
-      const mx = (sx + tx) / 4;  
-      const my = (sy + ty) / 4;
-      return `M ${sx} ${sy} Q ${mx} ${my} ${tx} ${ty}`;
+  // Highlight this line
+  d3.selectAll(".ribbon")
+    .style("opacity", d => {
+      return (
+        (d.source.index === sourceIndex && d.target.index === targetIndex) ||
+        (d.target.index === sourceIndex && d.source.index === targetIndex)
+      ) ? 1 : 0;
     })
-    .style("fill", "none")
-    .style("stroke-width", d => widthScale(d.count))
-    .style("stroke", d => getNumberColor(d.source))
-    .style("stroke-opacity", 0.85)
-    .attr("data-original-width", d => widthScale(d.count))
-    .attr("data-original-color", d => getNumberColor(d.source));
+    .style("stroke-width", 10);
 
-  updateLinkVisibility();
-  updateLinkFilter();
-}
-// Number Filtering: Hide/Show Lines
-function updateLinkFilter() {
-  d3.selectAll("path.cooccur-link").each(function(){
-    const d = d3.select(this).datum();
-    if(!focusedNumber){
-      // No filter: Show all
-      d3.select(this).style("display","block");
-    }else{
-      // Selected Numbers: Only related connections will be displayed.
-      const isRelated = (d.source === focusedNumber) || (d.target === focusedNumber);
-      d3.select(this).style("display", isRelated ? "block" : "none");
-    }
-  });
-}
-
-function renderTopPairs() {
-  if (!cooccurMatrix) return;
-
-  const allPairs = [];
-  for (let a = 1; a <= 49; a++) {
-    for (let b = a + 1; b <= 49; b++) {
-      const cnt = cooccurMatrix[a][b];
-      if (cnt > 0) {
-        allPairs.push({ a, b, cnt });
+  // The two balls light up automatically
+  d3.selectAll(".labels circle")
+    .style("fill", function (d) {
+      if (d.index === sourceIndex || d.index === targetIndex) {
+        return getMarkSixColor(d.index + 1);
+      } else {
+        return "white";
       }
-    }
-  }
-
-  const topPairs = allPairs.sort((x, y) => y.cnt - x.cnt).slice(0, 10);
-  const container = document.getElementById("top-pairs-container");
-  container.innerHTML = "";
-  container.style.opacity = "0";
-
-  topPairs.forEach((p, index) => {
-      const el = document.createElement("div");
-      el.className = "pair-card";
-      el.style.opacity = "0"; 
-      el.style.transform = "translateY(6px)";
-
-      el.onclick = () => {
-        const pairNumA = p.a;
-        const pairNumB = p.b;
-        // If there is currently a locked number, and this pair is unrelated to the locked number.
-        if(focusedNumber !== null 
-          && focusedNumber !== pairNumA 
-          && focusedNumber !== pairNumB)
-        {
-          // Automatically cancel number filtering
-          focusedNumber = null;
-          updateLinkFilter();
-        }
-      
-        if (activePair?.a === p.a && activePair?.b === p.b) {
-          activePair = null;
-          clearAllHighlight();
-        } else {
-          activePair = { a: p.a, b: p.b };
-          highlightConnection(p.a, p.b);
-        }
-      };
-
-      el.innerHTML = `
-          <div class="pair-left">
-              <div class="pair-ball purple">${p.a}</div>
-              <span class="pair-arrow">↔</span>
-              <div class="pair-ball blue">${p.b}</div>
-          </div>
-          <div class="pair-right">
-              <div class="pair-count">${p.cnt}</div>
-              <span class="pair-text">times</span>
-          </div>
-      `;
-    container.appendChild(el);
-
-    setTimeout(() => {
-      el.style.opacity = "1";
-      el.style.transform = "translateY(0)";
-    }, index * 40);
-  });
-
-  setTimeout(() => {
-    container.style.opacity = "1";
-  }, 100);
+    });
 }
 
-function highlightConnection(a, b) {
-  clearAllHighlight();
+function resetDiagram(threshold) {
+  // Reset all connections to normal.
+  d3.selectAll(".ribbon")
+      .style("opacity", d => d.source.value >= threshold ? opacityScale(d.source.value) : 0)
+      .style("stroke-width", d => strokeScale(d.source.value));
 
-  d3.selectAll("path.cooccur-link").each(function (d) {
-    if (
-      (d.source === a && d.target === b) ||
-      (d.source === b && d.target === a)
-    ) {
-      d3.select(this)
-        .style("stroke", "#000000")
-        .style("stroke-width", 10)
-        .style("stroke-opacity", 1)
-        .raise();
-    }
-  });
+  // All balls turned white again.
+  d3.selectAll(".labels circle").style("fill", "white");
+
+  // Clear all selected states
+  selectedIndex = -1;
+  activePair = null;
 }
-  
-function clearAllHighlight() {
-  d3.selectAll("path.cooccur-link").each(function () {
-    const originalColor = d3.select(this).attr("data-original-color");
-    const originalWidth = d3.select(this).attr("data-original-width");
 
-    d3.select(this)
-      .style("stroke", originalColor)
-      .style("stroke-width", originalWidth)
-      .style("stroke-opacity", 0.85);
-  });
+async function loadCSVData() {
+    try {
+        const response = await fetch('Mark_Six.csv');
+        const data = await response.text();
+        const rows = data.split('\n').filter(row => row.trim() !== '').slice(1);
+
+        return rows.map(row => {
+            const columns = row.split(',');
+            return {
+                draw: columns[0]?.trim(),
+                date: columns[1]?.trim(),
+                weekday: columns[2]?.trim(),
+                numbers: [3,4,5,6,7,8].map(i => columns[i]?.trim()),
+                special: columns[9]?.trim()
+            };
+        });
+    } catch (error) {
+        console.log("Could not load CSV:", error);
+        return [];
+    }
+}
+
+function countPairwiseNumbers() {
+    let allNumbers = [];
+    markSixData.forEach(obj => {
+        let nums = [...obj.numbers];
+        if (includeExtraPage4 && obj.special) nums.push(obj.special);
+        allNumbers.push(nums);
+    });
+
+    allValues = [...new Set(allNumbers.flat())].sort((a,b)=>a-b);
+    const size = allValues.length;
+    const indexMap = new Map(allValues.map((v,i)=>[v,i]));
+    matrix = Array.from({length:size},()=>Array(size).fill(0));
+
+    allNumbers.forEach(arr=>{
+        arr.forEach(s=>{
+            arr.forEach(t=>{
+                if(s!==t){
+                    const i=indexMap.get(s);
+                    const j=indexMap.get(t);
+                    if(i!==undefined&&j!==undefined) matrix[i][j]++;
+                }
+            })
+        })
+    })
+}
+
+async function renderTopPairs() {
+    if (!matrix || matrix.length === 0) return;
+    const topPairs = await getTopPairs(10);
+    const container = document.getElementById("top-pairs-container");
+    container.innerHTML = "";
+
+    topPairs.forEach(p => {
+        const el = document.createElement("div");
+        el.className = "pair-card";
+        el.onclick = () => {
+            if (activePair?.a === p.a && activePair?.b === p.b) {
+                activePair = null; resetChords();
+            } else {
+                activePair = { a:p.a, b:p.b }; highlightChord(p.a,p.b);
+            }
+        };
+        el.innerHTML = `
+            <div class="pair-left">
+                <div class="pair-ball" style="background-color:${getMarkSixColor(+p.a)};">${p.a}</div>
+                <span class="pair-arrow">↔</span>
+                <div class="pair-ball" style="background-color:${getMarkSixColor(+p.b)};">${p.b}</div>
+            </div>
+            <div class="pair-right">
+                <div class="pair-count">${p.cnt}</div>
+                <span class="pair-text">times</span>
+            </div>`;
+        container.appendChild(el);
+    });
+}
+
+async function getTopPairs(count=9) {
+    let pairs=[];
+    for(let i=0;i<matrix.length;i++){
+        for(let j=i+1;j<matrix[i].length;j++){
+            if(matrix[i][j]>0) pairs.push({a:allValues[i],b:allValues[j],cnt:matrix[i][j]});
+        }
+    }
+    pairs.sort((a,b)=>b.cnt-a.cnt);
+    return pairs.slice(0,count);
+}
+
+function resetChords() {
+    const threshold=+document.getElementById('thresholdSlider').value;
+    resetDiagram(threshold);
 }
 
 // ==============================
