@@ -1210,7 +1210,7 @@ async function startCooccurPage() {
     slider.addEventListener('input', function() {
         const threshold = +this.value;
         document.getElementById('range-value').textContent = threshold;
-        updateChordByThreshold(threshold);
+        resetDiagram(threshold);
     });
 
     // Checkbox Switch
@@ -1350,22 +1350,6 @@ function drawChordDiagram(threshold) {
     });
 }
 
-// Update lines only when sliding
-function updateChordByThreshold(threshold) {
-    strokeScale = d3.scaleLinear()
-        .domain([threshold, maxRange])
-        .range([1, 10])
-        .clamp(true);
-
-    opacityScale = d3.scaleLinear()
-        .domain([threshold, maxRange])
-        .range([0.3, 1.0]);
-
-    d3.selectAll(".ribbon")
-        .attr("stroke-width", d => strokeScale(d.source.value))
-        .style("stroke-opacity", d => d.source.value >= threshold ? opacityScale(d.source.value) : 0);
-}
-
 function updateRangeValue(val) {
     document.getElementById('range-value').textContent = val;
 }
@@ -1412,46 +1396,55 @@ function highlightChord(num1, num2) {
   const sourceIndex = allValues.indexOf(num1);
   const targetIndex = allValues.indexOf(num2);
 
-  if (sourceIndex === -1 || targetIndex === -1) {
-    console.log("Number not found:", num1, num2);
-    return;
+  if (sourceIndex === -1 || targetIndex === -1) return;
+
+  const pairCount = matrix[sourceIndex][targetIndex];
+  let threshold = +document.getElementById('thresholdSlider').value;
+
+  // Automatically adjust to make this pair visible
+  if (threshold > pairCount) {
+    threshold = pairCount;
+    document.getElementById('thresholdSlider').value = threshold;
+    document.getElementById('range-value').textContent = threshold;
   }
 
-  // Reset all states.
-  const threshold = +document.getElementById('thresholdSlider').value;
+  // Recreate chart, then recalculate correct thickness
   resetDiagram(threshold);
 
-  // Highlight this line
+  // Light the line
   d3.selectAll(".ribbon")
-    .style("opacity", d => {
-      return (
-        (d.source.index === sourceIndex && d.target.index === targetIndex) ||
-        (d.target.index === sourceIndex && d.source.index === targetIndex)
-      ) ? 1 : 0;
-    })
+    .style("opacity", d => 
+      (d.source.index === sourceIndex && d.target.index === targetIndex) ||
+      (d.target.index === sourceIndex && d.source.index === targetIndex) ? 1 : 0
+    )
     .style("stroke-width", 10);
 
-  // The two balls light up automatically
+  // Light the two balls
   d3.selectAll(".labels circle")
-    .style("fill", function (d) {
-      if (d.index === sourceIndex || d.index === targetIndex) {
-        return getMarkSixColor(d.index + 1);
-      } else {
-        return "white";
-      }
-    });
+    .style("fill", d => 
+      d.index === sourceIndex || d.index === targetIndex 
+        ? getMarkSixColor(d.index + 1) 
+        : "white"
+    );
 }
 
 function resetDiagram(threshold) {
-  // Reset all connections to normal.
+  // The thickness is always based on "the current threshold ~ the maximum value of the entire range".
+  const safeStroke = d3.scaleLinear()
+    .domain([threshold, maxRange])
+    .range([1, 10])
+    .clamp(true);
+
+  const safeOpacity = d3.scaleLinear()
+    .domain([threshold, maxRange])
+    .range([0.3, 1]);
+
   d3.selectAll(".ribbon")
-      .style("opacity", d => d.source.value >= threshold ? opacityScale(d.source.value) : 0)
-      .style("stroke-width", d => strokeScale(d.source.value));
+    .style("opacity", d => d.source.value >= threshold ? safeOpacity(d.source.value) : 0)
+    .style("stroke-opacity", d => d.source.value >= threshold ? safeOpacity(d.source.value) : 0)
+    .style("stroke-width", d => safeStroke(d.source.value));
 
-  // All balls turned white again.
   d3.selectAll(".labels circle").style("fill", "white");
-
-  // Clear all selected states
   selectedIndex = -1;
   activePair = null;
 }
