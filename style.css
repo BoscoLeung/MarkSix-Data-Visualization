@@ -694,8 +694,8 @@ body, html {
     transform: translateY(6px);
 }
 .hc-rank {
-    min-width: 40px;    /* 关键 */
-    text-align: center;  /* 数字靠右好看：# 9、#10 对齐 */
+    min-width: 40px;
+    text-align: center;
     font-weight: bold;
 }
 .hc-ball {
