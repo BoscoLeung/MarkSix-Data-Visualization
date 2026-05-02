@@ -9,9 +9,9 @@ All the data comes from the Hong Kong Jockey Club official Mark Six results. htt
 There are two ways to run this Mark Six data visualization project.
 
 Plan A (Local Offline):
-1. Download all project files and place them in the same folder. 
+1. Download all project files (Mark_Six.csv, index.html, script.js, and style.css) and place them in the same folder.  
 2. Open that folder in VS Code, install the Live Server extension, 
-3. right‑click index.html, and select Open with Live Server to launch the website locally.
+3. Right‑click index.html, and select Open with Live Server to launch the website locally.
 
 Plan B (Online Access):
 1. If the local method fails, visit the deployed GitHub Pages link directly to browse the full project:https://boscoleung.github.io/MarkSix-Data-Visualization/
