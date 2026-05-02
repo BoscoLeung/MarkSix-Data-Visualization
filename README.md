@@ -15,4 +15,4 @@ Plan A (Local Offline):
 
 Plan B (Online Access):
 1. If the local method fails, visit the deployed GitHub Pages link directly to browse the full project:
-   https://boscoleung.github.io/MarkSix-Data-Visualization/
+   Link: https://boscoleung.github.io/MarkSix-Data-Visualization/
