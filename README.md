@@ -14,4 +14,5 @@ Plan A (Local Offline):
 3. Right‑click index.html, and select Open with Live Server to launch the website locally.
 
 Plan B (Online Access):
-1. If the local method fails, visit the deployed GitHub Pages link directly to browse the full project:https://boscoleung.github.io/MarkSix-Data-Visualization/
+1. If the local method fails, visit the deployed GitHub Pages link directly to browse the full project:
+   https://boscoleung.github.io/MarkSix-Data-Visualization/
