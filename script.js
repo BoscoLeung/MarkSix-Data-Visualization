@@ -898,7 +898,7 @@ async function startFrequencyPage() {
   generateFreqDivBalls();
   await loadFrequencyData();
 
-  sortByFreq();
+  sortBySize();
   setFreqButtonActive("sort");
 }
 
@@ -922,12 +922,12 @@ chkIncludeExtra.addEventListener("change", async function() {
   }
 
   await loadFrequencyData();
-  sortByFreq();
+  sortBySize();
   setFreqButtonActive("sort");
 });
 
-// Sort By Frequency function
-function sortByFreq() {
+// Sort By Size function
+function sortBySize() {
   const minCount = d3.min(Object.values(freqData));
   const maxCount = d3.max(Object.values(freqData));
   const sizeScale = d3.scaleSqrt().domain([minCount, maxCount]).range([20, 75]);
@@ -957,8 +957,8 @@ function sortByFreq() {
     });
 }
 
-// Size By Frequency function
-function sizeByFreq() {
+// Sort By Number function
+function sizeByNum() {
   const minCount = d3.min(Object.values(freqData));
   const maxCount = d3.max(Object.values(freqData));
   const sizeScale = d3.scaleSqrt().domain([minCount, maxCount]).range([20, 75]);
@@ -1004,20 +1004,20 @@ function setFreqButtonActive(mode) {
   currentFreqMode = mode;
 
   if(mode === "sort"){
-      d3.select("#btnSortFreq").classed("active-dark", true);
+      d3.select("#btnSortbySize").classed("active-dark", true);
   }else if(mode === "size"){
-      d3.select("#btnSizeFreq").classed("active-dark", true);
+      d3.select("#btnSortbyNum").classed("active-dark", true);
   }else if(mode === "reset"){
       d3.select("#btnResetFreq").classed("active-dark", true);
   }
 }
 
-document.getElementById("btnSortFreq").onclick = function() {
-  sortByFreq();
+document.getElementById("btnSortbySize").onclick = function() {
+  sortBySize();
   setFreqButtonActive("sort");
 };
-document.getElementById("btnSizeFreq").onclick = function() {
-  sizeByFreq();
+document.getElementById("btnSortbyNum").onclick = function() {
+  sizeByNum();
   setFreqButtonActive("size");
 };
 document.getElementById("btnResetFreq").onclick = function() {
